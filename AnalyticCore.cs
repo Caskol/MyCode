@@ -1,153 +1,119 @@
 ﻿
-using System.Text;
-using System.Text.RegularExpressions;
 using Antlr4.Runtime;
+using System.Text;
 
-public enum TokenTypes
-{
-    Keyword, //ключевые слова по типу using, namespace,internal,class и т.д.
-    Cycle, //слова, означающие начало цикла
-    Operator, //операторы унарные и прочие
-    DataType, //тип данных int bool и т.д.
-    Number, //числа (константы)
-    Variable //переменные
-}
 
 namespace MyCode
 {
-
     public class Tokenizer
     {
-        private List<Token> ListOfTokens = new List<Token>();
-        private static Regex regex;
-        public string TokenizedString = null;
-        //CodeCompileUnit ccu = new CodeCompileUnit();
-        static Dictionary<TokenTypes, string> TokenTypesRegEx = new Dictionary<TokenTypes, string>()
+        public char[] excludedChars = new char[] { '(', ' ', ')', '{', '}', '"', ';', ',', ':', '[', ']', '\r', '\n', '.' }; //исключаем из списка токенов ненужные символы (мусор при сравнении
+        private string _language;
+        private Lexer _lexer;
+        private Parser _parser;
+        private CommonTokenStream _cts;
+        private AntlrInputStream _inputStream;
+        private List<Tuple<int,string,string>> _tokens = new List<Tuple<int, string, string>>();
+        public string Language
         {
-            // \b используется для того, чтобы не было путаницы с определением ключевого слова например в переменной basic, где as - могло бы быть воспринято в качестве ключевого слова
-            {TokenTypes.Keyword, "(\\babstract\\b|\\bas\\b|\\bbase\\b|\\bbreak\\b|\\bcase\\b|\\bcatch\\b|\\bchecked\\b|\\bclass\\b|\\bconst\\b|\\bcontinue\\b|\\bdefault\\b|\\bdelegate\\b|\\belse\\b|\\benum\\b|\\bevent\\b|\\bexplicit\\b|\\bextern\\b|\\bfalse\\b|\\bfinally\\b|\\bfixed\\b|\\bgoto\\b|\\bif\\b|\\bimplicit\\b|\\bin\\b|\\binterface\\b|\\binternal\\b|\\bis\\b|\\block\\b|\\bnamespace\\b|\\bnew\\b|\\bnull\\b|\\bobject\\b|\\boperator\\b|\\bout\\b|\\boverride\\b|\\bparams\\b|\\bprivate\\b|\\bprotected\\b|\\bpublic\\b|\\breadonly\\b|\\bref\\b|\\breturn\\b|\\bsealed\\b|\\bsizeof\\b|\\bstack\\b|\\balloc\\b|\\bstatic\\b|\\bstruct\\b|\\bswitch\\b|\\bthis\\b|\\bthrow\\b|\\btrue\\b|\\btry\\b|\\btypeof\\b|\\bunchecked\\b|\\bunsafe\\b|\\bushort\\b|\\busing\\b|\\bvirtual\\b|\\bvoid\\b|\\bvolatile\\b)"},
-            {TokenTypes.Cycle,"(\\bfor\\b|\\bdo\\b|\\bwhile\\b|\\bforeach\\b)" },
-            {TokenTypes.DataType, "(\\bbool\\b|\\bbyte\\b|\\bchar\\b|\\bdecimal\\b|\\bdouble\\b|\\bfloat\\b|\\bint\\b|\\blong\\b|\\bsbyte\\b|\\bshort\\b|\\bstring\\b|\\buint\\b|\\bulong\\b)" }, //набор базовых типов данных C#
-            {TokenTypes.Operator, "([\\+]|[-]|[\\*]|[\\/]|[=]|[%]|[>]|[<]|[!]|[~]|[&]|[|]|[\\^])" }, //все УНАРНЫЕ знаки операций
-            {TokenTypes.Number, "-?[0-9]+[.]?[0-9]*" }, //регулярное выражение для чисел (поддерживаются отрицательные и дробные числа)
-            {TokenTypes.Variable,  "[a-zA-Zа-яА-Я]+\\w*"} //регулярное выражение для определения названия переменных
-        };
-
-        /// <summary>
-        /// Функция разбиения текста на токены
-        /// </summary>
-        /// <param name="text">Строка, которую необходимо токенизировать</param>
-        public void Tokenize(string text)
+            get { return _language; }
+        }
+        public Lexer Lexer
         {
-            //ccu.Parse
-            StringBuilder sb = new StringBuilder(text);
-            foreach (TokenTypes type in TokenTypesRegEx.Keys)
-            {
-                regex = new Regex(@$"{TokenTypesRegEx[type]}"); //создаем regex с паттерном по циклу
-                MatchCollection mc = regex.Matches(sb.ToString()); //инициализируем коллекцию совпадений, полученных при выполнении поиска в тексте
-                foreach (Match m in mc)
-                {
-                    //Для каждого совпадения данного типа создаем новый токен и добавляем его в список. Этот список находится в массиве под номером, равным номеру строки
-                    ListOfTokens.Add(new Token(type, m.Value, m.Index));
-                    //после добавления токена просто очищаем информацию о нем в исходном тексте
-                    sb=sb.Remove(m.Index,m.Value.Length); // заменяем совпавший элемент на пробелы (например совпавшее слово из 3-х букв заменится на 3 пробела)
-                    sb = sb.Insert(m.Index, new string('.', m.Value.Length));
-                }
-            }
-            ListOfTokens.Sort(); //сортируем токены
-            try
-            {
-                TokenizedString = SimplifyTokens();
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show(e.Message);
-                return;
-            }
+            get { return _lexer; }
+        }
+        public Parser Parser
+        {
+            get { return _parser; }
+        }
+        public CommonTokenStream CTS
+        {
+            get { return _cts; }
+        }
+        public List<Tuple<int, string, string>> TokensArray
+        {
+            get { return _tokens; }
+        }
+        public AntlrInputStream InputStream
+        {
+            get { return _inputStream; }
         }
         /// <summary>
-        /// Функция для генерации упрощенного 
+        /// Конструктор класса Tokenizer. Создает экземпляр класса, содержащий в себе список токенов и дерево парса 
         /// </summary>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        public string SimplifyTokens()
+        /// <param name="language">Язык программирования, к которому привязан введенный текст</param>
+        /// <param name="inputText">Введённый текст</param>
+        public Tokenizer(string language, string inputText) 
         {
-            string output;//конечная строка с упрощенным списком токенов
-            if (ListOfTokens == null)
-                throw new ArgumentNullException("Сначала нужно создать токены");
-            else
+            _inputStream = new AntlrInputStream(inputText); //преобразовываем текст в особый формат для ANTLR
+            switch (language)
             {
-                StringBuilder sb = new StringBuilder(); //создаем динамический генератор строки
-                foreach (Token token in ListOfTokens) //для каждого токена составляем свое упрощенное название
-                {
-                    try
+                case "C":
                     {
-                        sb.Append(SimplifyTokenTypes(token.GetType));
+                        _lexer = new CLexer(_inputStream); //создаем лексер на основе введенного текста
+                        _cts = new CommonTokenStream(_lexer); //создаем поток токенов, полученных в результате работы лексера
+                        _cts.Fill(); //заполняем его
+                        _parser = new CParser(_cts) { BuildParseTree = true }; //создаем парсер, чтобы получить дерево парса
+                        //var tree = _parser.translationUnit(); // получаем дерево парса
+                        break;
                     }
-                    catch (Exception e)
+                case "C++":
                     {
-                        MessageBox.Show(e.Message);
-                        return null;
+                        _lexer = new CPP14Lexer(_inputStream);
+                        _cts = new CommonTokenStream(_lexer);
+                        _cts.Fill();
+                        _parser = new CPP14Parser(_cts) { BuildParseTree = true };
+                        //var tree = _parser.translationUnit(); // получаем дерево парса
+                        break;
                     }
-                }
-                output = sb.ToString();
+                case "Pascal":
+                    {
+                        _lexer = new pascalLexer(_inputStream);
+                        _cts = new CommonTokenStream(_lexer);
+                        _cts.Fill();
+                        _parser = new pascalParser(_cts) { BuildParseTree = true };
+                        //var tree = _parser.program(); // получаем дерево парса
+                        break;
+                    }
+                case "Python":
+                    {
+                        _lexer = new Python3Lexer(_inputStream);
+                        _cts = new CommonTokenStream(_lexer);
+                        _cts.Fill();
+                        _parser = new Python3Parser(_cts) { BuildParseTree = true };
+                        //var tree = _parser.file_input(); // получаем дерево парса
+                        break;
+                    }
+                case "Java":
+                    {
+                        _lexer = new Java9Lexer(_inputStream);
+                        _cts = new CommonTokenStream(_lexer);
+                        _cts.Fill();
+                        _parser = new Java9Parser(_cts) { BuildParseTree = true };
+                        //var tree = _parser.compilationUnit(); // получаем дерево парса
+                        break;
+                    }
+                case "C#":
+                    {
+                        _lexer = new CSharpLexer(_inputStream);
+                        _cts = new CommonTokenStream(_lexer);
+                        _cts.Fill();
+                        _parser = new CSharpParser(_cts) { BuildParseTree = true };
+                        //ParserRuleContext tree = _parser.compilation_unit(); // получаем дерево парса
+                        break;
+                    }
             }
-            return output;
         }
-        private char SimplifyTokenTypes(TokenTypes type)
+        public void FillTokensArray()
         {
-            switch (type) 
+            foreach (var Token in _cts.GetTokens())
             {
-                case TokenTypes.Keyword:
-                    return 'K';
-                case TokenTypes.Cycle:
-                    return 'C';
-                case TokenTypes.Operator:
-                    return 'O';
-                case TokenTypes.DataType:
-                    return 'D';
-                case TokenTypes.Number:
-                    return 'N';
-                case TokenTypes.Variable:
-                    return 'V';
-                default:
-                    throw new ArgumentException("Несуществующий тип токена");
+                if (Token.Text.IndexOfAny(excludedChars) == -1) //если токен не содержит исключаемых символов, описанных в excludedChars
+                    _tokens.Add(new Tuple<int, string, string>(Token.Line,_lexer.Vocabulary.GetSymbolicName(Token.Type),Token.Text));
             }
-        }    
-    }
-    public class Token : IComparable
-    {
-        private TokenTypes Type; //тип токена
-        private string Data; //содержимое токена
-        private int Index; //индекс символа строки, на которой был найден токен
-        /// <summary>
-        /// Реализация сравнения двух токенов для верной работы функции Sort у списка
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
-        public int CompareTo(object obj)
-        {
-            if (obj == null)
-                throw new ArgumentException("Попытка сравнить пустой объект");
-            Token otherToken = obj as Token; //принимаем объект ТОЛЬКО в виде токена
-
-            if (this.Index < otherToken.Index) //если индекс текущего токена меньше индекса другого токена
-                return -1; //то текущий токен должен быть спереди
-            else if (this.Index == otherToken.Index)
-                return 0; //не имеет значения
-            else
-                return 1; //текущий токен должен стоять после
-        }
-        public TokenTypes GetType { get { return Type; } }
-        internal Token(TokenTypes type, string data,int index)
-        {
-            Type = type;
-            Data = data;
-            Index = index;
         }
     }
-    public class Comparator
+        public class Comparator
     {
         private float percentage;
         public float Percent { get { return percentage; } }

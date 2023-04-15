@@ -11,7 +11,7 @@ namespace MyCode
 {
     public partial class MainForm : Form
     {
-        Tokenizer analyticLeft = null, analyticRight = null;
+        //Tokenizer analyticLeft = null, analyticRight = null;
         LiteDatabase db = new LiteDatabase(@"CodeLibrary.db"); //подключаем базу данных NoSQL к программе
         List<String> availableLanguages = new List<String>()
         {
@@ -54,43 +54,6 @@ namespace MyCode
                     }
                 }
             }
-        }
-        /// <summary>
-        /// LEGACY
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void buttonCreateTokens_Click(object sender, EventArgs e)
-        {
-
-            StringBuilder text = new StringBuilder(""); //создаем временную переменную, содержащую нормализованный текст
-            if (FCTBLeft.LinesCount > 0) //если в левом окне есть текст, то токенизируем его
-            {
-                text.Clear();
-                for (int i = 0; i < FCTBLeft.LinesCount; i++) //÷икл нормализации каждой линии
-                    text.Append(Regex.Replace(FCTBLeft.Lines[i], @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " ")); //убираем блоки комментариев и табул€ции
-                analyticLeft = new Tokenizer();
-                analyticLeft.Tokenize(text.ToString());
-            }
-            if (FCTBRight.LinesCount > 0) //если в левом окне есть текст, то токенизируем его
-            {
-                text.Clear();
-                for (int i = 0; i < FCTBRight.LinesCount; i++) //÷икл нормализации каждой линии
-                    text.Append(Regex.Replace(FCTBRight.Lines[i], @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " ")); //убираем блоки комментариев и табул€ции
-                analyticRight = new Tokenizer();
-                analyticRight.Tokenize(text.ToString());
-            }
-            Comparator cmp = new Comparator();
-            try
-            {
-                cmp.LevenshteinDistance(analyticLeft.TokenizedString, analyticRight.TokenizedString);
-                MessageBox.Show($"–езультат сравнени€: {(float)cmp.Percent}");
-            }
-            catch (ArgumentNullException ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-
         }
 
         private void FCTBLeft_TextChanged(object sender, TextChangedEventArgs e)
