@@ -121,6 +121,7 @@
             // 
             // comboBoxLanguage
             // 
+            comboBoxLanguage.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxLanguage.FormattingEnabled = true;
             comboBoxLanguage.Items.AddRange(new object[] { "C#", "C++", "C", "Python", "Pascal", "Java" });
             comboBoxLanguage.Location = new Point(3, 75);
@@ -196,7 +197,7 @@
             buttonCompare.TabIndex = 0;
             buttonCompare.Text = "Сравнить";
             buttonCompare.UseVisualStyleBackColor = true;
-            buttonCompare.Click += buttonCreateTokens_Click;
+            buttonCompare.Click += buttonCompare_Click;
             // 
             // openFileDialog
             // 
@@ -212,6 +213,7 @@
             FCTBRight.CharWidth = 8;
             FCTBRight.DisabledColor = Color.FromArgb(100, 180, 180, 180);
             FCTBRight.Dock = DockStyle.Fill;
+            FCTBRight.Font = new Font("Courier New", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             FCTBRight.IsReplaceMode = false;
             FCTBRight.Location = new Point(337, 5);
             FCTBRight.Name = "FCTBRight";
@@ -233,6 +235,7 @@
             FCTBLeft.CharWidth = 8;
             FCTBLeft.DisabledColor = Color.FromArgb(100, 180, 180, 180);
             FCTBLeft.Dock = DockStyle.Fill;
+            FCTBLeft.Font = new Font("Courier New", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             FCTBLeft.IsReplaceMode = false;
             FCTBLeft.Location = new Point(5, 5);
             FCTBLeft.Name = "FCTBLeft";

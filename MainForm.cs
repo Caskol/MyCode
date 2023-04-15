@@ -13,9 +13,14 @@ namespace MyCode
     {
         Tokenizer analyticLeft = null, analyticRight = null;
         LiteDatabase db = new LiteDatabase(@"CodeLibrary.db"); //подключаем базу данных NoSQL к программе
+        List<String> availableLanguages = new List<String>()
+        {
+            "C", "C++", "C#","Java","Pascal", "Python"
+        };
         public MainForm()
         {
             InitializeComponent();
+            comboBoxLanguage.DataSource = availableLanguages;
         }
 
 
@@ -50,7 +55,11 @@ namespace MyCode
                 }
             }
         }
-
+        /// <summary>
+        /// LEGACY
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void buttonCreateTokens_Click(object sender, EventArgs e)
         {
 
@@ -106,9 +115,13 @@ namespace MyCode
 
         private void button1_Click(object sender, EventArgs e)
         {
-            TokensAndTree window = new TokensAndTree(FCTBLeft.Text, "C#");
+            TokensAndTree window = new TokensAndTree(FCTBLeft.Text, comboBoxLanguage.Text);
             window.Show();
         }
 
+        private void buttonCompare_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

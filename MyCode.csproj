@@ -9,7 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="AntlrGrammars\**" />
+    <EmbeddedResource Remove="AntlrGrammars\**" />
+    <None Remove="AntlrGrammars\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove=".filenesting.json" />
+    <None Remove="ANTLRGrammars.dll" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,5 +24,11 @@
     <PackageReference Include="Antlr4BuildTasks" Version="12.2.0" PrivateAssets="all" />
     <PackageReference Include="FCTB" Version="2.16.24" />
     <PackageReference Include="LiteDB" Version="5.0.16" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="ANTLRGrammars">
+      <HintPath>ANTLRGrammars.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>
