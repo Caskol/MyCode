@@ -34,8 +34,6 @@ namespace MyCode
 
         private void TokensAndTree_Load(object sender, EventArgs e)
         {
-            if (tokenizer != null)
-                tokenizer.FillTokensArray();
             foreach (var Token in tokenizer.TokensArray)
             {
                 tokenRow = tokens.NewRow();

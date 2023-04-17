@@ -1,5 +1,6 @@
 ﻿
 using Antlr4.Runtime;
+using Antlr4.Runtime.Tree;
 using System.Text;
 
 
@@ -54,7 +55,7 @@ namespace MyCode
                         _cts = new CommonTokenStream(_lexer); //создаем поток токенов, полученных в результате работы лексера
                         _cts.Fill(); //заполняем его
                         _parser = new CParser(_cts) { BuildParseTree = true }; //создаем парсер, чтобы получить дерево парса
-                        //var tree = _parser.translationUnit(); // получаем дерево парса
+                        ParserRuleContext tree = ((CParser)_parser).translationUnit(); // получаем дерево парса
                         break;
                     }
                 case "C++":
@@ -63,7 +64,7 @@ namespace MyCode
                         _cts = new CommonTokenStream(_lexer);
                         _cts.Fill();
                         _parser = new CPP14Parser(_cts) { BuildParseTree = true };
-                        //var tree = _parser.translationUnit(); // получаем дерево парса
+                        ParserRuleContext tree = ((CPP14Parser)_parser).translationUnit(); // получаем дерево парса
                         break;
                     }
                 case "Pascal":
@@ -72,7 +73,7 @@ namespace MyCode
                         _cts = new CommonTokenStream(_lexer);
                         _cts.Fill();
                         _parser = new pascalParser(_cts) { BuildParseTree = true };
-                        //var tree = _parser.program(); // получаем дерево парса
+                        ParserRuleContext tree = ((pascalParser)_parser).program(); // получаем дерево парса
                         break;
                     }
                 case "Python":
@@ -81,7 +82,7 @@ namespace MyCode
                         _cts = new CommonTokenStream(_lexer);
                         _cts.Fill();
                         _parser = new Python3Parser(_cts) { BuildParseTree = true };
-                        //var tree = _parser.file_input(); // получаем дерево парса
+                        ParserRuleContext tree = ((Python3Parser)_parser).file_input(); // получаем дерево парса
                         break;
                     }
                 case "Java":
@@ -90,7 +91,7 @@ namespace MyCode
                         _cts = new CommonTokenStream(_lexer);
                         _cts.Fill();
                         _parser = new Java9Parser(_cts) { BuildParseTree = true };
-                        //var tree = _parser.compilationUnit(); // получаем дерево парса
+                        ParserRuleContext tree = ((Java9Parser)_parser).compilationUnit(); // получаем дерево парса
                         break;
                     }
                 case "C#":
@@ -99,17 +100,17 @@ namespace MyCode
                         _cts = new CommonTokenStream(_lexer);
                         _cts.Fill();
                         _parser = new CSharpParser(_cts) { BuildParseTree = true };
-                        //ParserRuleContext tree = _parser.compilation_unit(); // получаем дерево парса
+                        ParserRuleContext tree = ((CSharpParser)_parser).compilation_unit(); // получаем дерево парса
                         break;
                     }
             }
-        }
-        public void FillTokensArray()
-        {
-            foreach (var Token in _cts.GetTokens())
+            if (_lexer != null && _cts != null)//если получилось создать лексер и поток токенов, то можно записать токены в список
             {
-                if (Token.Text.IndexOfAny(excludedChars) == -1) //если токен не содержит исключаемых символов, описанных в excludedChars
-                    _tokens.Add(new Tuple<int, string, string>(Token.Line,_lexer.Vocabulary.GetSymbolicName(Token.Type),Token.Text));
+                
+                foreach (var Token in _cts.GetTokens())
+                    if (Token.Text.IndexOfAny(excludedChars) == -1) //если токен не содержит исключаемых символов, описанных в excludedChars
+                        _tokens.Add(new Tuple<int, string, string>(Token.Line, _lexer.Vocabulary.GetSymbolicName(Token.Type), Token.Text));
+                ParseTreeWalker treeWalker = new ParseTreeWalker();
             }
         }
     }
