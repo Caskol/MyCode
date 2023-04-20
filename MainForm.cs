@@ -6,6 +6,7 @@ using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using System.Diagnostics;
 using System.ComponentModel.Design.Serialization;
+using Antlr4.Build.Tasks;
 
 namespace MyCode
 {
@@ -76,15 +77,45 @@ namespace MyCode
             StatusStripLabel.Text = "Всего строк в правом окне: " + FCTBRight.LinesCount;
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void buttonCompare_Click(object sender, EventArgs e)
+        {
+            Tokenizer leftCode, rightCode=null;
+            StringBuilder text = new StringBuilder("");
+            if (FCTBLeft.LinesCount > 0) //
+            {
+                text.Clear();
+                for (int i = 0; i < FCTBLeft.LinesCount; i++) //убираем комментарии в цикле построчно
+                    text.Append(Regex.Replace(FCTBLeft.Lines[i], @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " ")); 
+                leftCode = new Tokenizer (comboBoxLanguage.SelectedValue.ToString(),text.ToString());
+            }
+            else
+            {
+                MessageBox.Show("В левом окне программы не может находиться текст, у которого длина 0 строк");
+                return;
+            }
+            if (FCTBRight.LinesCount > 0) //
+            {
+                text.Clear();
+                for (int i = 0; i < FCTBRight.LinesCount; i++) //
+                    text.Append(Regex.Replace(FCTBRight.Lines[i], @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " ")); //
+                rightCode = new Tokenizer(comboBoxLanguage.SelectedValue.ToString(), text.ToString());
+            }
+            Comparator cmp = new Comparator();
+            try
+            {
+                cmp.LevenshteinDistance(leftCode.TokensArray, rightCode.TokensArray);
+                MessageBox.Show($": {(float)cmp.Percent}");
+            }
+            catch (ArgumentNullException ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void buttonShowTokens_Click(object sender, EventArgs e)
         {
             TokensAndTree window = new TokensAndTree(FCTBLeft.Text, comboBoxLanguage.Text);
             window.Show();
-        }
-
-        private void buttonCompare_Click(object sender, EventArgs e)
-        {
-
         }
     }
 }

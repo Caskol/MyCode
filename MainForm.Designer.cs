@@ -39,7 +39,7 @@
             StatusStripLabel = new ToolStripStatusLabel();
             PanelWithButtons = new Panel();
             comboBoxLanguage = new ComboBox();
-            button1 = new Button();
+            buttonShowTokens = new Button();
             groupBox1 = new GroupBox();
             labelPlagiat = new Label();
             labelPlagiatPercent = new Label();
@@ -110,7 +110,7 @@
             // PanelWithButtons
             // 
             PanelWithButtons.Controls.Add(comboBoxLanguage);
-            PanelWithButtons.Controls.Add(button1);
+            PanelWithButtons.Controls.Add(buttonShowTokens);
             PanelWithButtons.Controls.Add(groupBox1);
             PanelWithButtons.Controls.Add(buttonCompare);
             PanelWithButtons.Dock = DockStyle.Right;
@@ -129,15 +129,15 @@
             comboBoxLanguage.Size = new Size(202, 23);
             comboBoxLanguage.TabIndex = 3;
             // 
-            // button1
+            // buttonShowTokens
             // 
-            button1.Location = new Point(3, 39);
-            button1.Name = "button1";
-            button1.Size = new Size(202, 30);
-            button1.TabIndex = 2;
-            button1.Text = "Показать токены";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += button1_Click;
+            buttonShowTokens.Location = new Point(3, 39);
+            buttonShowTokens.Name = "buttonShowTokens";
+            buttonShowTokens.Size = new Size(202, 30);
+            buttonShowTokens.TabIndex = 2;
+            buttonShowTokens.Text = "Показать токены";
+            buttonShowTokens.UseVisualStyleBackColor = true;
+            buttonShowTokens.Click += buttonShowTokens_Click;
             // 
             // groupBox1
             // 
@@ -213,7 +213,6 @@
             FCTBRight.CharWidth = 8;
             FCTBRight.DisabledColor = Color.FromArgb(100, 180, 180, 180);
             FCTBRight.Dock = DockStyle.Fill;
-            FCTBRight.Font = new Font("Courier New", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             FCTBRight.IsReplaceMode = false;
             FCTBRight.Location = new Point(337, 5);
             FCTBRight.Name = "FCTBRight";
@@ -235,7 +234,6 @@
             FCTBLeft.CharWidth = 8;
             FCTBLeft.DisabledColor = Color.FromArgb(100, 180, 180, 180);
             FCTBLeft.Dock = DockStyle.Fill;
-            FCTBLeft.Font = new Font("Courier New", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             FCTBLeft.IsReplaceMode = false;
             FCTBLeft.Location = new Point(5, 5);
             FCTBLeft.Name = "FCTBLeft";
@@ -305,7 +303,7 @@
         private ToolStripMenuItem DBViewToolStripMenuItem;
         private Button buttonCompare;
         private GroupBox groupBox1;
-        private Button button1;
+        private Button buttonShowTokens;
         private Label labelPlagiatPercent;
         private Label labelRightCount;
         private Label labelLeftCount;
