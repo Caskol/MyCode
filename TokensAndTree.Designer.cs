@@ -1,6 +1,6 @@
 ﻿namespace MyCode
 {
-    partial class TokensAndTree
+    partial class TokensReview
     {
         /// <summary>
         /// Required designer variable.
@@ -28,8 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TokensReview));
             dataGridViewTokens = new DataGridView();
-            textBoxTree = new TextBox();
             ((System.ComponentModel.ISupportInitialize)dataGridViewTokens).BeginInit();
             SuspendLayout();
             // 
@@ -38,7 +38,7 @@
             dataGridViewTokens.AllowUserToAddRows = false;
             dataGridViewTokens.AllowUserToDeleteRows = false;
             dataGridViewTokens.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewTokens.Dock = DockStyle.Left;
+            dataGridViewTokens.Dock = DockStyle.Fill;
             dataGridViewTokens.Location = new Point(0, 0);
             dataGridViewTokens.Name = "dataGridViewTokens";
             dataGridViewTokens.ReadOnly = true;
@@ -48,38 +48,28 @@
             dataGridViewTokens.ShowCellToolTips = false;
             dataGridViewTokens.ShowEditingIcon = false;
             dataGridViewTokens.ShowRowErrors = false;
-            dataGridViewTokens.Size = new Size(362, 450);
+            dataGridViewTokens.Size = new Size(344, 401);
             dataGridViewTokens.TabIndex = 0;
             // 
-            // textBoxTree
-            // 
-            textBoxTree.Dock = DockStyle.Fill;
-            textBoxTree.Location = new Point(362, 0);
-            textBoxTree.Multiline = true;
-            textBoxTree.Name = "textBoxTree";
-            textBoxTree.ReadOnly = true;
-            textBoxTree.ScrollBars = ScrollBars.Both;
-            textBoxTree.Size = new Size(272, 450);
-            textBoxTree.TabIndex = 1;
-            // 
-            // TokensAndTree
+            // TokensReview
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(634, 450);
-            Controls.Add(textBoxTree);
+            ClientSize = new Size(344, 401);
             Controls.Add(dataGridViewTokens);
-            Name = "TokensAndTree";
-            Text = "TokensAndTree";
+            Icon = (Icon)resources.GetObject("$this.Icon");
+            MaximizeBox = false;
+            MaximumSize = new Size(360, 12000);
+            MinimumSize = new Size(360, 440);
+            Name = "TokensReview";
+            Text = "Tokens Review";
             Load += TokensAndTree_Load;
             ((System.ComponentModel.ISupportInitialize)dataGridViewTokens).EndInit();
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion
 
         private DataGridView dataGridViewTokens;
-        private TextBox textBoxTree;
     }
 }

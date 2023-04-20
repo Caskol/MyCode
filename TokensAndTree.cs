@@ -12,7 +12,7 @@ using Antlr4.Runtime.Tree.Xpath;
 
 namespace MyCode
 {
-    public partial class TokensAndTree : Form
+    public partial class TokensReview : Form
     {
         public string textFromParent; //строка, полученная из основного окна
         public string programmingLanguage; //строка, которая указывает, какой язык программирования был выбран для анализа
@@ -20,7 +20,7 @@ namespace MyCode
         private DataRow tokenRow;
         private BindingSource bind = new BindingSource();
         Tokenizer tokenizer;
-        public TokensAndTree(string textFromParent, string ProgrammingLanguage)
+        public TokensReview(string textFromParent, string ProgrammingLanguage)
         {
             //инициализируем окно и выставляем названия колонкам
             this.textFromParent = textFromParent;
@@ -44,7 +44,7 @@ namespace MyCode
             }
             bind.DataSource = tokens;//привязываем готовую таблицу токенов к bindingsource 
             dataGridViewTokens.DataSource = bind;//привязываем bindingsource к datagridview 
-            
+
         }
     }
 }

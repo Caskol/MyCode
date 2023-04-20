@@ -13,6 +13,7 @@ namespace MyCode
     public partial class MainForm : Form
     {
         //Tokenizer analyticLeft = null, analyticRight = null;
+        byte plagiatPercentSetting=70;
         LiteDatabase db = new LiteDatabase(@"CodeLibrary.db"); //подключаем базу данных NoSQL к программе
         List<String> availableLanguages = new List<String>()
         {
@@ -60,11 +61,14 @@ namespace MyCode
         private void FCTBLeft_TextChanged(object sender, TextChangedEventArgs e)
         {
             StatusStripLabel.Text = "Всего строк в левом окне: " + FCTBLeft.LinesCount;
+            labelLeftCount.Text="Количество строк слева: " + FCTBLeft.LinesCount;
+
         }
 
         private void FCTBRight_TextChanged(object sender, TextChangedEventArgs e)
         {
             StatusStripLabel.Text = "Всего строк в правом окне: " + FCTBRight.LinesCount;
+            labelRightCount.Text = "Количество строк справа: " + FCTBRight.LinesCount;
         }
 
         private void FCTBLeft_Click(object sender, EventArgs e)
@@ -81,7 +85,7 @@ namespace MyCode
         {
             Tokenizer leftCode, rightCode=null;
             StringBuilder text = new StringBuilder("");
-            if (FCTBLeft.LinesCount > 0) //
+            if (FCTBLeft.LinesCount > 1 || FCTBLeft.Lines[0].Length!=0) //
             {
                 text.Clear();
                 for (int i = 0; i < FCTBLeft.LinesCount; i++) //убираем комментарии в цикле построчно
@@ -90,10 +94,10 @@ namespace MyCode
             }
             else
             {
-                MessageBox.Show("В левом окне программы не может находиться текст, у которого длина 0 строк");
+                MessageBox.Show("Левое окно программы не может быть пустым");
                 return;
             }
-            if (FCTBRight.LinesCount > 0) //
+            if (FCTBRight.LinesCount > 1 || FCTBRight.Lines[0].Length != 0) //
             {
                 text.Clear();
                 for (int i = 0; i < FCTBRight.LinesCount; i++) //
@@ -104,17 +108,23 @@ namespace MyCode
             try
             {
                 cmp.LevenshteinDistance(leftCode.TokensArray, rightCode.TokensArray);
+                if (plagiatPercentSetting > cmp.Percent)
+                    labelPlagiat.Text = "Плагиат: Нет";
+                else
+                    labelPlagiat.Text = "Плагиат: Да";
+                labelPlagiatPercent.Text = "Текущее значение схожести: " + (float)cmp.Percent;
                 MessageBox.Show($": {(float)cmp.Percent}");
             }
             catch (ArgumentNullException ex)
             {
                 MessageBox.Show(ex.Message);
             }
+
         }
 
         private void buttonShowTokens_Click(object sender, EventArgs e)
         {
-            TokensAndTree window = new TokensAndTree(FCTBLeft.Text, comboBoxLanguage.Text);
+            TokensReview window = new TokensReview(FCTBLeft.Text, comboBoxLanguage.Text);
             window.Show();
         }
     }
