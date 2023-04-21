@@ -107,13 +107,15 @@ namespace MyCode
             Comparator cmp = new Comparator();
             try
             {
-                cmp.LevenshteinDistance(leftCode.TokensArray, rightCode.TokensArray);
+                float levenshtein=cmp.LevenshteinDistance(leftCode.TokensArray, rightCode.TokensArray);
+                float jaccard = cmp.JaccardCoefficient(leftCode.NGramms, rightCode.NGramms);
+                float dice = cmp.SorensenDiceCoefficient(leftCode.NGramms, rightCode.NGramms);
                 if (plagiatPercentSetting > cmp.Percent)
                     labelPlagiat.Text = "Плагиат: Нет";
                 else
                     labelPlagiat.Text = "Плагиат: Да";
                 labelPlagiatPercent.Text = "Текущее значение схожести: " + (float)cmp.Percent;
-                MessageBox.Show($": {(float)cmp.Percent}");
+                MessageBox.Show($"Результат:\nЛевенштейн:{levenshtein}\nЖаккар:{jaccard}\nСёренсен:{dice}");
             }
             catch (ArgumentNullException ex)
             {

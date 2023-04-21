@@ -1,6 +1,7 @@
 ﻿
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
+using System.Collections.Generic;
 using System.Text;
 
 
@@ -15,6 +16,8 @@ namespace MyCode
         private ParserRuleContext _tree;
         private CommonTokenStream _cts;
         private AntlrInputStream _inputStream;
+        private string _tokenArrayInString;
+        private List<string> _ngrams = new List<string>();
         /// <summary>
         /// int - номер строки, string - название токена, string - содержимое токена
         /// </summary>
@@ -40,6 +43,10 @@ namespace MyCode
         {
             get { return _tokens; }
         }
+        public List<string> NGramms
+        {
+            get { return _ngrams; }
+        }
         public AntlrInputStream InputStream
         {
             get { return _inputStream; }
@@ -59,8 +66,8 @@ namespace MyCode
                         _lexer = new CLexer(_inputStream); //создаем лексер на основе введенного текста
                         _cts = new CommonTokenStream(_lexer); //создаем поток токенов, полученных в результате работы лексера
                         _cts.Fill(); //заполняем его
-                        _parser = new CParser(_cts) { BuildParseTree = true }; //создаем парсер, чтобы получить дерево парса
-                        _tree = ((CParser)_parser).translationUnit(); // получаем дерево парса
+                        //_parser = new CParser(_cts) { BuildParseTree = true }; //создаем парсер, чтобы получить дерево парса
+                        //_tree = ((CParser)_parser).translationUnit(); // получаем дерево парса
                         break;
                     }
                 case "C++":
@@ -68,8 +75,8 @@ namespace MyCode
                         _lexer = new CPP14Lexer(_inputStream);
                         _cts = new CommonTokenStream(_lexer);
                         _cts.Fill();
-                        _parser = new CPP14Parser(_cts) { BuildParseTree = true };
-                        _tree = ((CPP14Parser)_parser).translationUnit(); // получаем дерево парса
+                        //_parser = new CPP14Parser(_cts) { BuildParseTree = true };
+                        //_tree = ((CPP14Parser)_parser).translationUnit(); // получаем дерево парса
                         break;
                     }
                 case "Pascal":
@@ -77,8 +84,8 @@ namespace MyCode
                         _lexer = new pascalLexer(_inputStream);
                         _cts = new CommonTokenStream(_lexer);
                         _cts.Fill();
-                        _parser = new pascalParser(_cts) { BuildParseTree = true };
-                        _tree = ((pascalParser)_parser).program(); // получаем дерево парса
+                        //_parser = new pascalParser(_cts) { BuildParseTree = true };
+                        //_tree = ((pascalParser)_parser).program(); // получаем дерево парса
                         break;
                     }
                 case "Python":
@@ -86,8 +93,8 @@ namespace MyCode
                         _lexer = new Python3Lexer(_inputStream);
                         _cts = new CommonTokenStream(_lexer);
                         _cts.Fill();
-                        _parser = new Python3Parser(_cts) { BuildParseTree = true };
-                        _tree = ((Python3Parser)_parser).file_input(); // получаем дерево парса
+                        //_parser = new Python3Parser(_cts) { BuildParseTree = true };
+                        //_tree = ((Python3Parser)_parser).file_input(); // получаем дерево парса
                         break;
                     }
                 case "Java":
@@ -95,8 +102,8 @@ namespace MyCode
                         _lexer = new Java9Lexer(_inputStream);
                         _cts = new CommonTokenStream(_lexer);
                         _cts.Fill();
-                        _parser = new Java9Parser(_cts) { BuildParseTree = true };
-                        _tree = ((Java9Parser)_parser).compilationUnit(); // получаем дерево парса
+                        //_parser = new Java9Parser(_cts) { BuildParseTree = true };
+                        //_tree = ((Java9Parser)_parser).compilationUnit(); // получаем дерево парса
                         break;
                     }
                 case "C#":
@@ -104,8 +111,8 @@ namespace MyCode
                         _lexer = new CSharpLexer(_inputStream);
                         _cts = new CommonTokenStream(_lexer);
                         _cts.Fill();
-                        _parser = new CSharpParser(_cts) { BuildParseTree = true };
-                        _tree = ((CSharpParser)_parser).compilation_unit(); // получаем дерево парса
+                        //_parser = new CSharpParser(_cts) { BuildParseTree = true };
+                        //_tree = ((CSharpParser)_parser).compilation_unit(); // получаем дерево парса
                         break;
                     }
             }
@@ -114,15 +121,34 @@ namespace MyCode
                 foreach (var Token in _cts.GetTokens())
                     if (Token.Text.IndexOfAny(excludedChars) == -1) //если токен не содержит исключаемых символов, описанных в excludedChars
                         _tokens.Add(new Tuple<int, string, string>(Token.Line, _lexer.Vocabulary.GetSymbolicName(Token.Type), Token.Text));
-                if (_tree != null) //если есть дерево, то обходим его
-                {
-                    ParseTreeWalker treeWalker = new ParseTreeWalker();
-                    for (int i = 0; i < _tree.ChildCount; i++)
-                    {
-                        //ParseTree parseTree = _tree.GetChild(i);
-                        //treeWalker.walk(new CSharpListener(this), parseTree);
-                    }
-                }   
+                _tokenArrayInString = this.ToString();
+                CreateNGramms();
+            }
+        }
+        public override string ToString()
+        {
+            try
+            {
+                StringBuilder sb = new StringBuilder("");
+                foreach (var Token in _tokens)
+                    sb.Append(Token.Item2);
+                return sb.ToString();
+            }
+            catch (ArgumentNullException ex)
+            {
+                return "Can't convert Tokenizer into string without tokens array";
+            }
+        }
+        private void CreateNGramms()
+        {
+            try
+            {
+                for (int i=0;i< _tokenArrayInString.Length;i++)
+                    _ngrams.Add(_tokenArrayInString.Substring(i, 2));
+            }
+            catch (Exception ex)
+            {
+                return;
             }
         }
     }
@@ -131,12 +157,12 @@ namespace MyCode
         private float percentage;
         public float Percent { get { return percentage; } }
         /// <summary>
-        /// Основной алгоритм сравнения схожести текстов - алгоритм Вагнера-Фишера
+        /// Алгоритм Вагнера-Фишера (расстояните Левенштейна)
         /// </summary>
-        /// <param name="text1">Первый сравниваемый фрагмент текста</param>
-        /// <param name="text2">Второй сравниваемый фрагмент текста</param>
+        /// <param name="tokensArray1">Массив токенов, полученных из первого текста</param>
+        /// <param name="tokensArray2">Массив токенов, полученных из второго текста</param>
         /// <returns>Процент совпадения фрагментов</returns>
-        public void LevenshteinDistance(List<Tuple<int, string, string>> tokensArray1, List<Tuple<int, string, string>> tokensArray2)
+        public float LevenshteinDistance(List<Tuple<int, string, string>> tokensArray1, List<Tuple<int, string, string>> tokensArray2)
         {
             if (tokensArray1 != null || tokensArray2 != null)
             {
@@ -167,6 +193,45 @@ namespace MyCode
             {
                 throw new ArgumentNullException("Одна из сравниваемых строк была пустой");
             }
+            return percentage;
+        }
+        /// <summary>
+        /// Коэффициент Жаккара для вычисления степени схожести двух массивов
+        /// </summary>
+        /// <param name="tokensArray1">Массив токенов, полученных из первого текста</param>
+        /// <param name="tokensArray2">Массив токенов, полученных из второго текста</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public float JaccardCoefficient(List<string> gramms1, List<string> gramms2)
+        {
+            if (gramms1 != null || gramms2 != null)
+            {
+                var hashedGramms1 = new HashSet<string>(gramms1);
+                var hashedGramms2 = new HashSet<string>(gramms2);
+                var intersection = gramms1.Intersect(gramms2).Count(); //получаем значение пересечения двух массивов между собой (т.е. количество элементов, которые присутствуют в обоих массивах)
+                var union = gramms1.Union(gramms2).Count();//получаем значние объединения двух массивов между собой (т.е. общее количество элементов)
+                percentage = (float)intersection/ union;
+            }
+            else
+            {
+                throw new ArgumentNullException("Одна из сравниваемых строк была пустой");
+            }
+            return percentage;
+        }
+        /// <summary>
+        /// Коэффициент Сёренсена-Дайса для вычисления схожести двух массивов
+        /// </summary>
+        /// <param name="tokensArray1">Массив токенов, полученных из первого текста</param>
+        /// <param name="tokensArray2">Массив токенов, полученных из второго текста</param>
+        /// <returns></returns>
+        public float SorensenDiceCoefficient(List<string> gramms1, List<string> gramms2)
+        {
+            var hashedGramms1 = new HashSet<string>(gramms1);
+            var hashedGramms2 = new HashSet<string>(gramms2);
+            var intersection = hashedGramms1.Intersect(hashedGramms2).Count();
+            var total = hashedGramms1.Count + hashedGramms2.Count;
+
+            return (float)(2 * intersection) / total;
         }
     }
 }
