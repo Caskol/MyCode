@@ -48,19 +48,19 @@
             dataGridViewTokens.ShowCellToolTips = false;
             dataGridViewTokens.ShowEditingIcon = false;
             dataGridViewTokens.ShowRowErrors = false;
-            dataGridViewTokens.Size = new Size(344, 401);
+            dataGridViewTokens.Size = new Size(364, 401);
             dataGridViewTokens.TabIndex = 0;
             // 
             // TokensReview
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(344, 401);
+            ClientSize = new Size(364, 401);
             Controls.Add(dataGridViewTokens);
             Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
-            MaximumSize = new Size(360, 12000);
-            MinimumSize = new Size(360, 440);
+            MaximumSize = new Size(380, 12000);
+            MinimumSize = new Size(380, 440);
             Name = "TokensReview";
             Text = "Tokens Review";
             Load += TokensAndTree_Load;
