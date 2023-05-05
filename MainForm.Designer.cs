@@ -158,18 +158,18 @@
             labelPlagiat.AutoSize = true;
             labelPlagiat.Location = new Point(3, 92);
             labelPlagiat.Name = "labelPlagiat";
-            labelPlagiat.Size = new Size(72, 15);
+            labelPlagiat.Size = new Size(80, 15);
             labelPlagiat.TabIndex = 3;
-            labelPlagiat.Text = "Плагиат: Да";
+            labelPlagiat.Text = "Плагиат: Н/Д";
             // 
             // labelPlagiatPercent
             // 
             labelPlagiatPercent.AutoSize = true;
             labelPlagiatPercent.Location = new Point(3, 68);
             labelPlagiatPercent.Name = "labelPlagiatPercent";
-            labelPlagiatPercent.Size = new Size(197, 15);
+            labelPlagiatPercent.Size = new Size(191, 15);
             labelPlagiatPercent.TabIndex = 2;
-            labelPlagiatPercent.Text = "Текущее значение схожести: 100%";
+            labelPlagiatPercent.Text = "Текущее значение схожести: Н/Д";
             // 
             // labelRightCount
             // 
@@ -213,6 +213,7 @@
             FCTBRight.CharWidth = 8;
             FCTBRight.DisabledColor = Color.FromArgb(100, 180, 180, 180);
             FCTBRight.Dock = DockStyle.Fill;
+            FCTBRight.Font = new Font("Courier New", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             FCTBRight.IsReplaceMode = false;
             FCTBRight.Location = new Point(337, 5);
             FCTBRight.Name = "FCTBRight";
@@ -234,6 +235,7 @@
             FCTBLeft.CharWidth = 8;
             FCTBLeft.DisabledColor = Color.FromArgb(100, 180, 180, 180);
             FCTBLeft.Dock = DockStyle.Fill;
+            FCTBLeft.Font = new Font("Courier New", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             FCTBLeft.IsReplaceMode = false;
             FCTBLeft.Location = new Point(5, 5);
             FCTBLeft.Name = "FCTBLeft";

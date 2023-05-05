@@ -7,8 +7,12 @@ using LiteDB;
 
 namespace MyCode
 {
-    internal class CodeInfo
+    public class CodeInfo
     {
-
+        public uint Id {  get; set; }
+        public Tokenizer Tokenizer { get; set; }
+        public Shingle Shingle { get; set; }
+        public uint SymbolsCount { get; set; }
+        public string Language { get; set; }
     }
 }

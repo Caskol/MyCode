@@ -113,7 +113,12 @@ namespace MyCode
                         //_tree = ((CSharpParser)_parser).compilation_unit(); // получаем дерево парса
                         break;
                     }
+                default:
+                    {
+                        throw new ArgumentException("Программа не поддерживает такой язык программирования");
+                    }
             }
+            _language = language;
             if (_lexer != null && _cts != null)//если получилось создать лексер и поток токенов, то можно записать токены в список
             {
                 foreach (var Token in _cts.GetTokens())
@@ -134,7 +139,7 @@ namespace MyCode
                     sb.Append(Token.Item3);
                 return sb.ToString();
             }
-            catch (ArgumentNullException ex)
+            catch (ArgumentNullException)
             {
                 return "Cannot convert Tokenizer into string without tokens array";
             }
@@ -152,7 +157,7 @@ namespace MyCode
                     ids.Add(Token.Item2);
                 return ids;
             }
-            catch (ArgumentNullException ex)
+            catch (ArgumentNullException)
             {
                 return ids;
             }
@@ -170,7 +175,7 @@ namespace MyCode
                     sb.Append(Token.Item2);
                 return sb.ToString();
             }
-            catch (ArgumentNullException ex)
+            catch (ArgumentNullException)
             {
                 return string.Empty;
             }
@@ -185,7 +190,7 @@ namespace MyCode
             get { return _shingleList; }
         }
         /// <summary>
-        /// Конструктор класса, который принимает 
+        /// Конструктор класса, который принимает список идентификаторов из токенизатора а затем составляет из них список шинглов длиной n (по умолчанию n=4)
         /// </summary>
         /// <param name="tokenizer"></param>
         /// <exception cref="ArgumentNullException"></exception>
@@ -199,6 +204,8 @@ namespace MyCode
             {
                 StringBuilder sb = new StringBuilder("");
                 List<string> ids = tokenizer.GetIdentificatorsList(); //записываем в список все идентификаторы из токенизатора
+                if (ids.Count < n)
+                    throw new ArgumentException($"Количество токенов меньше чем длина шингла (т.е. {n}). При данном наборе данных невозможно узнать коэффициенты на основе шинглов (Жаккар и Сёренсен)");
                 for (int i=0;i<ids.Count-n+1;i++)
                 {
                     sb.Clear();
@@ -208,8 +215,15 @@ namespace MyCode
                 }
             }    
         }
+        /// <summary>
+        /// Конструктор класса, который принимает строку, которую разделяет на список шинглов
+        /// </summary>
+        /// <param name="input"></param>
+        /// <exception cref="ArgumentException"></exception>
         public Shingle (string input)
         {
+            if (input.Length < 2)
+                throw new ArgumentException("Сравнение текстов при помощи метода шинглов недоступно, т.к. один из текстов содержит менее двух символов (требуется 2 и более)");
             _canonizedCodeArrayInString= input;
             for (int i = 0; i < _canonizedCodeArrayInString.Length-1; i++)
                 _shingleList.Add(_canonizedCodeArrayInString.Substring(i, 2));
@@ -223,7 +237,7 @@ namespace MyCode
                     sb.Append(Shingle);
                 return sb.ToString();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return string.Empty;
             }
@@ -231,8 +245,10 @@ namespace MyCode
     }
     public class Comparator
     {
-        private float percentage=0;
-        public float Percent { get { return percentage; } }
+        private float percentageTokens=0;
+        private float percentageShingles = 0;
+        public float PercentTokens { get { return percentageTokens; } set { percentageTokens = value; } }
+        public float PercentShingles { get { return percentageShingles; } set { percentageShingles = value; } }
         /// <summary>
         /// Алгоритм Вагнера-Фишера (расстояние Левенштейна). Количество операций вставок, удаления, которые необходимо сделать из одного текста чтобы получить другой
         /// </summary>
@@ -244,7 +260,6 @@ namespace MyCode
             int stepCount=0;
             if (array1.Count != 0 || array2.Count != 0)
             {
-                percentage = 0; //переменная, которая будет хранить информацию о проценте сходства текста
                 int[,] LevenshteinArray = new int[array1.Count, array2.Count];
                 for (int i = 0; i < array1.Count; i++) //столбец
                 {

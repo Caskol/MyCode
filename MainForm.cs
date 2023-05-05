@@ -1,20 +1,13 @@
 using FastColoredTextBoxNS;
 using System.Text;
 using System.Text.RegularExpressions;
-using LiteDB;
-using Antlr4.Runtime;
-using Antlr4.Runtime.Tree;
-using System.Diagnostics;
-using System.ComponentModel.Design.Serialization;
-using Antlr4.Build.Tasks;
 
 namespace MyCode
 {
     public partial class MainForm : Form
     {
-        //Tokenizer analyticLeft = null, analyticRight = null;
-        byte plagiatPercentSetting=70;
-        LiteDatabase db = new LiteDatabase(@"CodeLibrary.db"); //подключаем базу данных NoSQL к программе
+        byte plagiatPercentSetting = 70;
+
         readonly List<String> availableLanguages = new List<String>()
         {
             "C", "C++", "C#","Java","Pascal", "Python"
@@ -38,7 +31,7 @@ namespace MyCode
                     {
                         sb.Append(streamReader.ReadToEnd());
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         MessageBox.Show("Выбран неверный формат файла. Не удалось прочитать строки из файла.");
                         return;
@@ -61,7 +54,7 @@ namespace MyCode
         private void FCTBLeft_TextChanged(object sender, TextChangedEventArgs e)
         {
             StatusStripLabel.Text = "Всего строк в левом окне: " + FCTBLeft.LinesCount;
-            labelLeftCount.Text="Количество строк слева: " + FCTBLeft.LinesCount;
+            labelLeftCount.Text = "Количество строк слева: " + FCTBLeft.LinesCount;
 
         }
 
@@ -83,28 +76,36 @@ namespace MyCode
 
         private void buttonCompare_Click(object sender, EventArgs e)
         {
-            Tokenizer leftCode, rightCode=null;
+            Tokenizer leftCode, rightCode;
             StringBuilder text = new StringBuilder("");
-            if (FCTBLeft.LinesCount > 1 || FCTBLeft.Lines[0].Length!=0) //
+
+
+
+            if (FCTBLeft.LinesCount > 1 || FCTBLeft.Lines[0].Length != 0) //
             {
                 text.Clear();
                 StringBuilder line = new StringBuilder("");
                 for (int i = 0; i < FCTBLeft.LinesCount; i++) //убираем комментарии в цикле построчно
                 {
                     line.Append(FCTBLeft.Lines[i].ToString());
-                    //Лексер и парсер языков C и C++, поставляемые в ANTLR4 базово имеют проблемы с распознаванием препроцессоров, поэтому лучше удалять символы, которые указывают на препроцессинг
+                    //Лексер и парсер языков C и C++, поставляемые в ANTLR4 базово, имеют проблемы с распознаванием препроцессоров, поэтому лучше удалять символы, которые указывают на препроцессинг
                     if (comboBoxLanguage.SelectedValue.ToString().Equals("C") || comboBoxLanguage.SelectedValue.ToString().Equals("C++"))
                         line.Replace("#", "");
                     text.Append(Regex.Replace(line.ToString(), @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " "));
                     line.Clear();
                 }
-                leftCode = new Tokenizer (comboBoxLanguage.SelectedValue.ToString(),text.ToString());
+                leftCode = new Tokenizer(comboBoxLanguage.SelectedValue.ToString(), text.ToString());
             }
             else
             {
                 MessageBox.Show("Левое окно программы не может быть пустым");
                 return;
             }
+
+
+
+
+
             if (FCTBRight.LinesCount > 1 || FCTBRight.Lines[0].Length != 0) //
             {
                 text.Clear();
@@ -120,38 +121,92 @@ namespace MyCode
                 }
                 rightCode = new Tokenizer(comboBoxLanguage.SelectedValue.ToString(), text.ToString());
             }
+            else
+            {
+                //ДОПИСАТЬ СЮДА РАБОТУ С БД
+                rightCode = new Tokenizer(comboBoxLanguage.SelectedValue.ToString(), text.ToString());
+            }
+
+
+
+
+
             Comparator cmp = new Comparator();
             try
             {
-                Shingle left = new Shingle(leftCode.ToString());
-                Shingle right = new Shingle(rightCode.ToString());
-                float levenshteinToken=cmp.LevenshteinDistance(leftCode.TokensArray, rightCode.TokensArray);
-                float jaccardToken = cmp.JaccardCoefficient(new Shingle(leftCode,4).Shingles, new Shingle(rightCode, 4).Shingles); //создаем k-граммы из идентификатор, причем k=4
-                float diceToken = cmp.SorensenDiceCoefficient(new Shingle(leftCode, 4).Shingles, new Shingle(rightCode, 4).Shingles);
-                float lcsToken = cmp.LongestCommonSubsequence(leftCode.GetIdentificatorsString(),rightCode.GetIdentificatorsString());
-                float levenshteinShingle = cmp.LevenshteinDistance(left.Shingles, right.Shingles);
-                float jaccardShingle = cmp.JaccardCoefficient(left.Shingles,right.Shingles);
-                float diceShingle = cmp.SorensenDiceCoefficient(left.Shingles, right.Shingles);
-                float lcsShingle = cmp.LongestCommonSubsequence(left.ToString(),right.ToString());
-                if (plagiatPercentSetting > cmp.Percent)
-                    labelPlagiat.Text = "Плагиат: Нет";
+                //ТОКЕНЫ    
+                float levenshteinToken = cmp.LevenshteinDistance(leftCode.TokensArray, rightCode.TokensArray);
+                float jaccardToken = -1, diceToken = -1;
+                try
+                {
+                    jaccardToken = cmp.JaccardCoefficient(new Shingle(leftCode, 4).Shingles, new Shingle(rightCode, 4).Shingles); //создаем k-граммы из идентификатор, причем k=4
+                    diceToken = cmp.SorensenDiceCoefficient(new Shingle(leftCode, 4).Shingles, new Shingle(rightCode, 4).Shingles);
+                }
+                catch (ArgumentException ex)
+                {
+                    MessageBox.Show(ex.Message, "Важное предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                float lcsToken = cmp.LongestCommonSubsequence(leftCode.GetIdentificatorsString(), rightCode.GetIdentificatorsString());
+                if (jaccardToken == -1 && diceToken == -1)
+                    cmp.PercentTokens = (levenshteinToken + lcsToken) / 2 * 100;
                 else
+                    cmp.PercentTokens = (levenshteinToken + jaccardToken + diceToken + lcsToken) / 4 * 100;
+
+
+
+
+                //ШИНГЛЫ
+                Shingle left = null, right = null;
+                float levenshteinShingle = -1, jaccardShingle = -1, diceShingle = -1, lcsShingle = -1;
+                try
+                {
+                    left = new Shingle(leftCode.ToString());
+                    right = new Shingle(rightCode.ToString()); //дописать логику когда второе окно пустое
+                }
+                catch (ArgumentException ex)
+                {
+                    MessageBox.Show(ex.Message, "Важное предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                if (left != null && right != null)
+                {
+                    levenshteinShingle = cmp.LevenshteinDistance(left.Shingles, right.Shingles);
+                    jaccardShingle = cmp.JaccardCoefficient(left.Shingles, right.Shingles);
+                    diceShingle = cmp.SorensenDiceCoefficient(left.Shingles, right.Shingles);
+                    lcsShingle = cmp.LongestCommonSubsequence(left.ToString(), right.ToString());
+                    cmp.PercentShingles = (levenshteinShingle + jaccardShingle + diceShingle + lcsShingle) / 4 * 100;
+                }
+
+                if (plagiatPercentSetting > cmp.PercentTokens)
+                {
+                    labelPlagiat.Text = "Плагиат: Нет";
+                    DialogResult dr = MessageBox.Show("Вы хотите добавить код, размещенный в левом окне в базу данных?","Добавление в базу данных" , MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                }
+                else
+                {
                     labelPlagiat.Text = "Плагиат: Да";
-                labelPlagiatPercent.Text = "Текущее значение схожести: " + (float)cmp.Percent;
-                MessageBox.Show($"Результат:\nМетод токенов:\nЛевенштейн:{levenshteinToken*100}%\nЖаккар:{jaccardToken*100}%\nСёренсен:{diceToken*100}%\nLCS:{lcsToken * 100}%\tИтог:{(levenshteinToken+jaccardToken+diceToken)/3*100}%\nМетод шинглов:\nЛевенштейн:{levenshteinShingle*100}%\nЖаккар:{jaccardShingle*100}%\nСёренсен:{diceShingle*100}%\nLCS:{lcsShingle * 100}%\tИтог:{(levenshteinShingle+jaccardShingle+diceShingle)/3*100}%");
+                }
+
+                labelPlagiatPercent.Text = "Текущее значение схожести: " + cmp.PercentTokens+"%";
+                MessageBox.Show($"Результат:\nМетод токенов:\nЛевенштейн:{levenshteinToken * 100}%\nЖаккар:{jaccardToken * 100}%\nСёренсен:{diceToken * 100}%\nLCS:{lcsToken * 100}%\tИтог:{cmp.PercentTokens}%\nМетод шинглов:\nЛевенштейн:{levenshteinShingle * 100}%\nЖаккар:{jaccardShingle * 100}%\nСёренсен:{diceShingle * 100}%\nLCS:{lcsShingle * 100}%\tИтог:{cmp.PercentShingles}%");
             }
             catch (Exception ex)
             {
-                if (ex is NullReferenceException)
-                MessageBox.Show("Окно справа было пустым");
+                MessageBox.Show(ex.Message, "Произошла ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
         }
 
         private void buttonShowTokens_Click(object sender, EventArgs e)
         {
-            TokensReview window = new TokensReview(FCTBLeft.Text, comboBoxLanguage.Text);
-            window.Show();
+            try
+            {
+                TokensReview window = new TokensReview(FCTBLeft.Text, comboBoxLanguage.Text);
+                window.Show();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Произошла ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }
