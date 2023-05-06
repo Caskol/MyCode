@@ -17,14 +17,13 @@ namespace MyCode
         public string textFromParent; //строка, полученная из основного окна
         public string programmingLanguage; //строка, которая указывает, какой язык программирования был выбран для анализа
         private DataTable tokens = new DataTable();
-        private DataRow tokenRow;
-        private BindingSource bind = new BindingSource();
+        
         Tokenizer tokenizer;
-        public TokensReview(string textFromParent, string ProgrammingLanguage)
+        public TokensReview(string textFromParent, string programmingLanguage)
         {
             //инициализируем окно и выставляем названия колонкам
             this.textFromParent = textFromParent;
-            this.programmingLanguage = ProgrammingLanguage;
+            this.programmingLanguage = programmingLanguage;
             tokenizer = new Tokenizer(programmingLanguage, textFromParent);
             tokens.Columns.Add("Строка");
             tokens.Columns.Add("Токен");
@@ -34,6 +33,9 @@ namespace MyCode
 
         private void TokensAndTree_Load(object sender, EventArgs e)
         {
+            DataRow tokenRow;
+            BindingSource bind = new BindingSource();
+
             foreach (var Token in tokenizer.TokensArray)
             {
                 tokenRow = tokens.NewRow();

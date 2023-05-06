@@ -9,10 +9,18 @@ namespace MyCode
 {
     public class CodeInfo
     {
-        public uint Id {  get; set; }
-        public Tokenizer Tokenizer { get; set; }
-        public Shingle Shingle { get; set; }
-        public uint SymbolsCount { get; set; }
-        public string Language { get; set; }
+        [BsonId]
+        public ObjectId Id { get; set; }
+        public string CanonizedCode { get; set; } //канонизированный код
+        public uint SymbolsCount { get; set; } //количество символов в канонизированном коде
+        public string Language { get; set; } //язык, на котором был написан код
+        public DateTime DateTime { get; set; } //дата добавления
+        public CodeInfo( string canonizedCode, uint symbolsCount, string language, DateTime dateTime)
+        {
+            CanonizedCode = canonizedCode;
+            SymbolsCount = symbolsCount;
+            Language = language;
+            DateTime = dateTime;
+        }
     }
 }

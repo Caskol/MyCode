@@ -86,6 +86,7 @@
             DBViewToolStripMenuItem.Name = "DBViewToolStripMenuItem";
             DBViewToolStripMenuItem.Size = new Size(94, 20);
             DBViewToolStripMenuItem.Text = "Просмотр БД";
+            DBViewToolStripMenuItem.Click += DBViewToolStripMenuItem_Click;
             // 
             // SettingsToolStripMenuItem
             // 
@@ -213,7 +214,6 @@
             FCTBRight.CharWidth = 8;
             FCTBRight.DisabledColor = Color.FromArgb(100, 180, 180, 180);
             FCTBRight.Dock = DockStyle.Fill;
-            FCTBRight.Font = new Font("Courier New", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             FCTBRight.IsReplaceMode = false;
             FCTBRight.Location = new Point(337, 5);
             FCTBRight.Name = "FCTBRight";
@@ -235,7 +235,6 @@
             FCTBLeft.CharWidth = 8;
             FCTBLeft.DisabledColor = Color.FromArgb(100, 180, 180, 180);
             FCTBLeft.Dock = DockStyle.Fill;
-            FCTBLeft.Font = new Font("Courier New", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             FCTBLeft.IsReplaceMode = false;
             FCTBLeft.Location = new Point(5, 5);
             FCTBLeft.Name = "FCTBLeft";

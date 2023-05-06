@@ -78,8 +78,8 @@ namespace MyCode
         {
             Tokenizer leftCode, rightCode;
             StringBuilder text = new StringBuilder("");
-
-
+            uint symbolsCount;
+            string canonizedCode;
 
             if (FCTBLeft.LinesCount > 1 || FCTBLeft.Lines[0].Length != 0) //
             {
@@ -95,10 +95,12 @@ namespace MyCode
                     line.Clear();
                 }
                 leftCode = new Tokenizer(comboBoxLanguage.SelectedValue.ToString(), text.ToString());
+                symbolsCount = (uint)text.ToString().Length;
+                canonizedCode = text.ToString();
             }
             else
             {
-                MessageBox.Show("Левое окно программы не может быть пустым");
+                MessageBox.Show("Левое окно программы не может быть пустым", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -179,14 +181,17 @@ namespace MyCode
                 if (plagiatPercentSetting > cmp.PercentTokens)
                 {
                     labelPlagiat.Text = "Плагиат: Нет";
-                    DialogResult dr = MessageBox.Show("Вы хотите добавить код, размещенный в левом окне в базу данных?","Добавление в базу данных" , MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    DialogResult dr = MessageBox.Show("Вы хотите добавить код, размещенный в левом окне в базу данных?", "Добавление в базу данных", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    DBWorker worker = new DBWorker();
+                    CodeInfo ci = new CodeInfo(canonizedCode, symbolsCount, comboBoxLanguage.SelectedValue.ToString(),DateTime.Now);
+                    worker.InsertIntoDB(ci);
                 }
                 else
                 {
                     labelPlagiat.Text = "Плагиат: Да";
                 }
 
-                labelPlagiatPercent.Text = "Текущее значение схожести: " + cmp.PercentTokens+"%";
+                labelPlagiatPercent.Text = "Текущее значение схожести: " + cmp.PercentTokens + "%";
                 MessageBox.Show($"Результат:\nМетод токенов:\nЛевенштейн:{levenshteinToken * 100}%\nЖаккар:{jaccardToken * 100}%\nСёренсен:{diceToken * 100}%\nLCS:{lcsToken * 100}%\tИтог:{cmp.PercentTokens}%\nМетод шинглов:\nЛевенштейн:{levenshteinShingle * 100}%\nЖаккар:{jaccardShingle * 100}%\nСёренсен:{diceShingle * 100}%\nLCS:{lcsShingle * 100}%\tИтог:{cmp.PercentShingles}%");
             }
             catch (Exception ex)
@@ -198,6 +203,11 @@ namespace MyCode
 
         private void buttonShowTokens_Click(object sender, EventArgs e)
         {
+            if (FCTBLeft.Text.Length == 0)
+            {
+                MessageBox.Show("Левое окно программы не может быть пустым","Предупреждение",MessageBoxButtons.OK,MessageBoxIcon.Warning);
+                return;
+            }
             try
             {
                 TokensReview window = new TokensReview(FCTBLeft.Text, comboBoxLanguage.Text);
@@ -207,6 +217,12 @@ namespace MyCode
             {
                 MessageBox.Show(ex.Message, "Произошла ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void DBViewToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Database window = new Database();
+            window.Show();
         }
     }
 }
