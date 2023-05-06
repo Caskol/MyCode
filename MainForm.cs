@@ -45,7 +45,7 @@ namespace MyCode
                     else
                     {
                         FCTBRight.Text = sb.ToString();
-                        StatusStripLabel.Text = "Всего строк: " + FCTBLeft.LineInfos.Count;
+                        StatusStripLabel.Text = "Всего строк: " + FCTBRight.LineInfos.Count;
                     }
                 }
             }
@@ -55,7 +55,6 @@ namespace MyCode
         {
             StatusStripLabel.Text = "Всего строк в левом окне: " + FCTBLeft.LinesCount;
             labelLeftCount.Text = "Количество строк слева: " + FCTBLeft.LinesCount;
-
         }
 
         private void FCTBRight_TextChanged(object sender, TextChangedEventArgs e)
@@ -183,8 +182,13 @@ namespace MyCode
                     labelPlagiat.Text = "Плагиат: Нет";
                     DialogResult dr = MessageBox.Show("Вы хотите добавить код, размещенный в левом окне в базу данных?", "Добавление в базу данных", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                     DBWorker worker = new DBWorker();
-                    CodeInfo ci = new CodeInfo(canonizedCode, symbolsCount, comboBoxLanguage.SelectedValue.ToString(),DateTime.Now);
-                    worker.InsertIntoDB(ci);
+                    if (dr == DialogResult.Yes)
+                    {
+
+                        CodeInfo ci = new CodeInfo(canonizedCode, symbolsCount, comboBoxLanguage.SelectedValue.ToString(), DateTime.Now);
+                        worker.InsertIntoDB(ci);
+                    }
+                    //worker.Find(symbolsCount);
                 }
                 else
                 {
@@ -205,7 +209,7 @@ namespace MyCode
         {
             if (FCTBLeft.Text.Length == 0)
             {
-                MessageBox.Show("Левое окно программы не может быть пустым","Предупреждение",MessageBoxButtons.OK,MessageBoxIcon.Warning);
+                MessageBox.Show("Левое окно программы не может быть пустым", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
             try
@@ -223,6 +227,43 @@ namespace MyCode
         {
             Database window = new Database();
             window.Show();
+        }
+
+        private void DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effect = DragDropEffects.Copy;
+            }
+            else
+            {
+                e.Effect = DragDropEffects.None;
+            }
+        }
+
+        private void DragDrop(object sender, DragEventArgs e)
+        {
+            string[] fileData = (string[])e.Data.GetData(DataFormats.FileDrop);
+            try
+            {
+                StreamReader streamReader = new StreamReader(fileData[0]); //получаем поток для чтения файла
+                StringBuilder sb = new StringBuilder();
+                try //пытаемся получить строки из файла
+                {
+                    sb.Append(streamReader.ReadToEnd());
+                    var FCTB = sender as FastColoredTextBox; //sender всегда будет одно из окон
+                    FCTB.Text = sb.ToString();
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("Выбран неверный формат файла. Не удалось прочитать строки из файла.");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
     }
 }

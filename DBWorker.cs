@@ -54,5 +54,27 @@ namespace MyCode
                 return allCodes;
             }
         }
+        /// <summary>
+        /// Метод для поиска в базе данных по значению количества символов SymbolsCount
+        /// </summary>
+        /// <param name="find">Число, относительно которого будет производиться поиск</param>
+        /// <returns></returns>
+        public IList<CodeInfo> Find (uint find)
+        {
+            var allFindings = new List<CodeInfo>();
+            using (var db = new LiteDatabase(@"CodeLibrary.db")) //подключаем базу данных NoSQL к программе 
+            {
+                var collection = db.GetCollection<CodeInfo>("Library"); //получаем набор исходных кодов (CodeInfo) из базы данных в таблице Library
+                var query = Query.And(
+                    Query.GTE("SymbolsCount", find - find * 0.2), //ищем те документы, у которых количество символов на 20% меньше заданного 
+                    Query.LTE("SymbolsCount", find + find * 0.2)); //ищем те документы, у которых количество символов на 20% больше заданного
+                var array = collection.Find(query);
+                foreach (var code in array)
+                {
+                    allFindings.Add(code);
+                }
+                return allFindings;
+            }
+        }
     }
 }
