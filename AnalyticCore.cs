@@ -14,7 +14,6 @@ namespace MyCode
         public char[] excludedChars = new char[] { '(', ' ', ')', '{', '}', '"', ';', ',', ':', '[', ']', '\r', '\n', '.' }; //исключаем из списка токенов ненужные символы (мусор при сравнении
         private string _language;
         private Lexer _lexer;
-        private Parser _parser;
         //private ParserRuleContext _tree;
         private CommonTokenStream _cts;
         //private CharStreams _inputStream = null;
@@ -29,10 +28,6 @@ namespace MyCode
         public Lexer Lexer
         {
             get { return _lexer; }
-        }
-        public Parser Parser
-        {
-            get { return _parser; }
         }
         public CommonTokenStream CTS
         {
@@ -64,8 +59,6 @@ namespace MyCode
                         _lexer = new CLexer(_inputStream); //создаем лексер на основе введенного текста
                         _cts = new CommonTokenStream(_lexer); //создаем поток токенов, полученных в результате работы лексера
                         _cts.Fill(); //заполняем его
-                        //_parser = new CParser(_cts) { BuildParseTree = true }; //создаем парсер, чтобы получить дерево парса
-                        //_tree = ((CParser)_parser).translationUnit(); // получаем дерево парса
                         break;
                     }
                 case "C++":
@@ -73,8 +66,6 @@ namespace MyCode
                         _lexer = new CPP14Lexer(_inputStream);
                         _cts = new CommonTokenStream(_lexer);
                         _cts.Fill();
-                        //_parser = new CPP14Parser(_cts) { BuildParseTree = true };
-                        //_tree = ((CPP14Parser)_parser).translationUnit(); // получаем дерево парса
                         break;
                     }
                 case "Pascal":
@@ -82,8 +73,6 @@ namespace MyCode
                         _lexer = new pascalLexer(_inputStream);
                         _cts = new CommonTokenStream(_lexer);
                         _cts.Fill();
-                        //_parser = new pascalParser(_cts) { BuildParseTree = true };
-                        //_tree = ((pascalParser)_parser).program(); // получаем дерево парса
                         break;
                     }
                 case "Python":
@@ -91,8 +80,6 @@ namespace MyCode
                         _lexer = new Python3Lexer(_inputStream);
                         _cts = new CommonTokenStream(_lexer);
                         _cts.Fill();
-                        //_parser = new Python3Parser(_cts) { BuildParseTree = true };
-                        //_tree = ((Python3Parser)_parser).file_input(); // получаем дерево парса
                         break;
                     }
                 case "Java":
@@ -100,8 +87,6 @@ namespace MyCode
                         _lexer = new Java9Lexer(_inputStream);
                         _cts = new CommonTokenStream(_lexer);
                         _cts.Fill();
-                        //_parser = new Java9Parser(_cts) { BuildParseTree = true };
-                        //_tree = ((Java9Parser)_parser).compilationUnit(); // получаем дерево парса
                         break;
                     }
                 case "C#":
@@ -109,8 +94,6 @@ namespace MyCode
                         _lexer = new CSharpLexer(_inputStream);
                         _cts = new CommonTokenStream(_lexer);
                         _cts.Fill();
-                        //_parser = new CSharpParser(_cts) { BuildParseTree = true };
-                        //_tree = ((CSharpParser)_parser).compilation_unit(); // получаем дерево парса
                         break;
                     }
                 default:

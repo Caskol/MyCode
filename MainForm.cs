@@ -1,4 +1,5 @@
 using FastColoredTextBoxNS;
+using System.Configuration;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -6,7 +7,7 @@ namespace MyCode
 {
     public partial class MainForm : Form
     {
-        byte plagiatPercentSetting = 70;
+        byte plagiatPercentSetting = Properties.Settings.Default.plagiatPercent;
 
         readonly List<String> availableLanguages = new List<String>()
         {
@@ -264,6 +265,18 @@ namespace MyCode
             {
                 MessageBox.Show(ex.Message);
             }
+        }
+
+        private void SettingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Settings window = new Settings(plagiatPercentSetting);
+            if (window.ShowDialog() == DialogResult.OK)
+            {
+                plagiatPercentSetting = window.GetData();
+                Properties.Settings.Default.plagiatPercent = plagiatPercentSetting;
+                Properties.Settings.Default.Save();
+            }
+                
         }
     }
 }
