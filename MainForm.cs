@@ -174,7 +174,6 @@ namespace MyCode
             foreach (var item in codeCompare)
             {
                 percents.Add(cmp.Compare(leftCode, leftCodeTokenShingles, leftCodeShingle, item));
-                 GC.Collect(); //запуск сборки мусора для удаления неиспользуемых более элементов
             }
             //после выполнения операций окно ожидания надо закрыть
             wf.Invoke((MethodInvoker)(() => { 

@@ -48,6 +48,7 @@
             progressBar1.Location = new Point(12, 79);
             progressBar1.Name = "progressBar1";
             progressBar1.Size = new Size(387, 23);
+            progressBar1.Style = ProgressBarStyle.Marquee;
             progressBar1.TabIndex = 1;
             // 
             // WaitingForm

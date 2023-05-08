@@ -240,14 +240,14 @@ namespace MyCode
         /// <returns>Процент совпадения фрагментов</returns>
         public float LevenshteinDistance<T>(List<T> array1, List<T> array2)
         {
-            int stepCount=0;
+            uint stepCount=0;
             if (array1.Count != 0 || array2.Count != 0)
             {
-                int[,] LevenshteinArray = new int[array1.Count, array2.Count];
-                for (int i = 0; i < array1.Count; i++) //столбец
+                uint[,] LevenshteinArray = new uint[array1.Count, array2.Count];
+                for (ushort i = 0; i < array1.Count; i++) //столбец
                 {
                     LevenshteinArray[i, 0] = i;//первый столбец заполняем порядковыми цифрами 
-                    for (int j = 1; j < array2.Count; j++) //строка
+                    for (ushort j = 1; j < array2.Count; j++) //строка
                     {
                         if (i == 0) //если идёт первый столбец, то заполняем его порядковыми цифрами
                             LevenshteinArray[i, j] = j;//первый столбец заполняем порядковыми цифрами 
@@ -256,7 +256,7 @@ namespace MyCode
                             if (array1 is List<Tuple<int, string, string>> tokens1 && array2 is List<Tuple<int, string, string>> tokens2) //преобразовываем T в тип Tuple
                             {
                                 if (!string.Equals(tokens1[i - 1].Item2, tokens2[j - 1].Item2)) //если i-й токен первого массива не совпадает с j-м токеном второго массива
-                                    LevenshteinArray[i, j] = Math.Min(Math.Min(LevenshteinArray[i - 1, j] + 1, LevenshteinArray[i, j - 1] + 1), LevenshteinArray[i - 1, j - 1] + 1);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0)+1)
+                                    LevenshteinArray[i, j] = Math.Min(Math.Min(LevenshteinArray[i - 1, j] + 1,LevenshteinArray[i, j - 1] + 1), LevenshteinArray[i - 1, j - 1] + 1);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0)+1)
                                 else
                                     LevenshteinArray[i, j] = Math.Min(Math.Min(LevenshteinArray[i - 1, j] + 1, LevenshteinArray[i, j - 1] + 1), LevenshteinArray[i - 1, j - 1]);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0))
                             }
@@ -296,7 +296,6 @@ namespace MyCode
                 var hashedArray1 = new HashSet<string>(array1);//убираем повторяющиеся элементы
                 var hashedArray2 = new HashSet<string>(array2);
                 intersection = hashedArray1.Intersect(hashedArray2).Count(); //получаем значение пересечения двух массивов между собой (т.е. количество элементов, которые присутствуют в обоих массивах)
-                //var intersection = array1.Intersect(array2).Count();
                 union = array1.Union(array2).Count();//получаем значение объединения двух массивов между собой (т.е. общее количество элементов)
             }
             else
@@ -319,6 +318,8 @@ namespace MyCode
                 var hashedGramms2 = new HashSet<string>(gramms2);
                 var intersection = hashedGramms1.Intersect(hashedGramms2).Count();
                 var total = hashedGramms1.Count + hashedGramms2.Count;
+                hashedGramms1 = null;
+                hashedGramms2 = null;
                 return (float)(2 * intersection) / total;
             }
             else
@@ -337,7 +338,7 @@ namespace MyCode
         {
             if (x.Length > 0 && y.Length > 0)
             {
-                int[,] array = new int[x.Length + 1, y.Length + 1]; //создаем матрицу, которая будет содержать количество совпадений символов
+                uint[,] array = new uint[x.Length + 1, y.Length + 1]; //создаем матрицу, которая будет содержать количество совпадений символов
                 for (int i = 0; i < array.GetLength(0); i++)//заполняем первый столбец нулями
                     array[i, 0] = 0;
                 for (int i = 0; i < array.GetLength(1); i++)//заполняем первую строку нулями
@@ -348,13 +349,14 @@ namespace MyCode
                     for (int j = 1; j < array.GetLength(1); j++) //столбец y
                     {
                         if (y[j - 1].Equals(x[i - 1])) //если j-й элемент строки совпадает с i-м элементов столбца
-                            array[i, j] = array[i-1, j - 1]+1;//если совпадает, то берем значения из диагональной ячейки и прибавляем 1
+                            array[i, j] = (ushort)(array[i-1, j - 1]+1);//если совпадает, то берем значения из диагональной ячейки и прибавляем 1
                         else
                             array[i, j] = Math.Max(array[i - 1, j], array[i, j - 1]);//если не совпадает, то берем максимальный из значений левого символа или верхнего символа
                     }
                 }
                 //сами подпоследовательности нас не интересуют, т.к. необходимо найти коэффициент схожести, а не само сходство. Это будет количество совпадений, деленное на длину текста максимальной длины
-                int lcsLength = array[x.Length, y.Length]; //берем самый последний элемент
+                uint lcsLength = array[x.Length, y.Length]; //берем самый последний элемент
+                array=null; //очищаем память
                 return (float)lcsLength/Math.Max(x.Length, y.Length); //и возвращаем его, поделив на длину текста
             }
             else
@@ -381,10 +383,10 @@ namespace MyCode
                 PercentTokens = (levenshteinToken + lcsToken) / 2 * 100;
             else
                 PercentTokens = (levenshteinToken + jaccardToken + diceToken + lcsToken) / 4 * 100;
-            result.Add(levenshteinToken);
-            result.Add(jaccardToken);
-            result.Add(diceToken);
-            result.Add(lcsToken);
+            result.Add(levenshteinToken*100);
+            result.Add(jaccardToken*100);
+            result.Add(diceToken*100);
+            result.Add(lcsToken*100);
             result.Add(PercentTokens);
 
 
@@ -407,11 +409,12 @@ namespace MyCode
                 lcsShingle = LongestCommonSubsequence(leftCodeShingles.ToString(), right.ToString());
                 PercentShingles = (levenshteinShingle + jaccardShingle + diceShingle + lcsShingle) / 4 * 100;
             }
-            result.Add(levenshteinShingle);
-            result.Add(jaccardShingle);
-            result.Add(diceShingle);
-            result.Add(lcsShingle);
+            result.Add(levenshteinShingle*100);
+            result.Add(jaccardShingle*100);
+            result.Add(diceShingle*100);
+            result.Add(lcsShingle*100);
             result.Add(PercentShingles);
+            GC.Collect();
             return result;
         }
     }
