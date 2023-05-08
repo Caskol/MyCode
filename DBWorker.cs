@@ -1,10 +1,5 @@
 ﻿using LiteDB;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using LiteDB;
+
 
 namespace MyCode
 {
@@ -59,15 +54,16 @@ namespace MyCode
         /// </summary>
         /// <param name="find">Число, относительно которого будет производиться поиск</param>
         /// <returns></returns>
-        public IList<CodeInfo> Find (uint find)
+        public List<CodeInfo> Find (uint find, string language)
         {
-            var allFindings = new List<CodeInfo>();
+            List<CodeInfo> allFindings = new List<CodeInfo>();
             using (var db = new LiteDatabase(@"CodeLibrary.db")) //подключаем базу данных NoSQL к программе 
             {
                 var collection = db.GetCollection<CodeInfo>("Library"); //получаем набор исходных кодов (CodeInfo) из базы данных в таблице Library
                 var query = Query.And(
                     Query.GTE("SymbolsCount", find - find * 0.2), //ищем те документы, у которых количество символов на 20% меньше заданного 
-                    Query.LTE("SymbolsCount", find + find * 0.2)); //ищем те документы, у которых количество символов на 20% больше заданного
+                    Query.LTE("SymbolsCount", find + find * 0.2), //ищем те документы, у которых количество символов на 20% больше заданного
+                    Query.EQ("Language", language));
                 var array = collection.Find(query);
                 foreach (var code in array)
                 {

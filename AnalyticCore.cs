@@ -360,5 +360,59 @@ namespace MyCode
             else
                 throw new ArgumentNullException("Одна из строк была пуста");
         }
+
+        public List<float> Compare(Tokenizer leftCode, List<string> leftCodeTokenShingles, Shingle leftCodeShingles, Tokenizer rightCode)
+        {
+            List<float> result = new List<float>();
+            //ТОКЕНЫ    
+            float levenshteinToken = LevenshteinDistance(leftCode.TokensArray, rightCode.TokensArray);
+            float jaccardToken = -1, diceToken = -1;
+            try
+            {
+                jaccardToken = JaccardCoefficient(leftCodeTokenShingles, new Shingle(rightCode, 4).Shingles); //создаем k-граммы из идентификатор, причем k=4
+                diceToken = SorensenDiceCoefficient(leftCodeTokenShingles, new Shingle(rightCode, 4).Shingles);
+            }
+            catch (Exception)
+            {
+                return result;
+            }
+            float lcsToken = LongestCommonSubsequence(leftCode.GetIdentificatorsString(), rightCode.GetIdentificatorsString());
+            if (jaccardToken == -1 && diceToken == -1)
+                PercentTokens = (levenshteinToken + lcsToken) / 2 * 100;
+            else
+                PercentTokens = (levenshteinToken + jaccardToken + diceToken + lcsToken) / 4 * 100;
+            result.Add(levenshteinToken);
+            result.Add(jaccardToken);
+            result.Add(diceToken);
+            result.Add(lcsToken);
+            result.Add(PercentTokens);
+
+
+            //ШИНГЛЫ
+            Shingle right = null;
+            float levenshteinShingle=-1, jaccardShingle=-1, diceShingle=-1, lcsShingle=-1;
+            try
+            {
+                right = new Shingle(rightCode.ToString());
+            }
+            catch (ArgumentException ex)
+            {
+                return result;
+            }
+            if (leftCodeShingles != null && right != null)
+            {
+                levenshteinShingle = LevenshteinDistance(leftCodeShingles.Shingles, right.Shingles);
+                jaccardShingle = JaccardCoefficient(leftCodeShingles.Shingles, right.Shingles);
+                diceShingle = SorensenDiceCoefficient(leftCodeShingles.Shingles, right.Shingles);
+                lcsShingle = LongestCommonSubsequence(leftCodeShingles.ToString(), right.ToString());
+                PercentShingles = (levenshteinShingle + jaccardShingle + diceShingle + lcsShingle) / 4 * 100;
+            }
+            result.Add(levenshteinShingle);
+            result.Add(jaccardShingle);
+            result.Add(diceShingle);
+            result.Add(lcsShingle);
+            result.Add(PercentShingles);
+            return result;
+        }
     }
 }

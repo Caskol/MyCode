@@ -76,134 +76,141 @@ namespace MyCode
 
         private void buttonCompare_Click(object sender, EventArgs e)
         {
-            Tokenizer leftCode, rightCode;
-            StringBuilder text = new StringBuilder("");
-            uint symbolsCount;
-            string canonizedCode;
+            Tokenizer leftCode; //токенизатор левого окна
+            Shingle leftCodeShingle=null;//шинглы из кода левого окна
+            List<string> leftCodeTokenShingles=null; //список шинглов на основе токенов (в одном шингле содержится 4 токена для уменьшения количества совпадающих шинглов)
+            uint symbolsCount; //количество символов в канонизированном тексте для потенциальной записи в базу данных
+            string canonizedCode; //строка с канонизированным кодом
+            List<Tokenizer> codeCompare = new List<Tokenizer>(); //создаем список кодов, с которым будет сравниваться основной код (т.е. тот, что введен в левом окне программы)
+            bool blockFromAddingInDatabase = false;
 
             if (FCTBLeft.LinesCount > 1 || FCTBLeft.Lines[0].Length != 0) //
             {
-                text.Clear();
-                StringBuilder line = new StringBuilder("");
-                for (int i = 0; i < FCTBLeft.LinesCount; i++) //убираем комментарии в цикле построчно
+                StringBuilder line = new StringBuilder(""); //временная переменная, в которую будет записываться строка, из которой будут удалены комментарии
+                for (int i = 0; i < FCTBLeft.LinesCount; i++) //записываем каждую строку в Stringbuilder
                 {
-                    line.Append(FCTBLeft.Lines[i].ToString());
-                    //Лексер и парсер языков C и C++, поставляемые в ANTLR4 базово, имеют проблемы с распознаванием препроцессоров, поэтому лучше удалять символы, которые указывают на препроцессинг
-                    if (comboBoxLanguage.SelectedValue.ToString().Equals("C") || comboBoxLanguage.SelectedValue.ToString().Equals("C++"))
-                        line.Replace("#", "");
-                    text.Append(Regex.Replace(line.ToString(), @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " "));
-                    line.Clear();
+                    line.Append(Regex.Replace(FCTBLeft.Lines[i].ToString(), @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " "));
                 }
-                leftCode = new Tokenizer(comboBoxLanguage.SelectedValue.ToString(), text.ToString());
-                symbolsCount = (uint)text.ToString().Length;
-                canonizedCode = text.ToString();
+                //Лексер и парсер языков C и C++, поставляемые в ANTLR4 базово, имеют проблемы с распознаванием препроцессоров, поэтому лучше удалять символы, которые указывают на препроцессинг
+                if (comboBoxLanguage.SelectedValue.ToString().Equals("C") || comboBoxLanguage.SelectedValue.ToString().Equals("C++"))
+                    line.Replace("#", "");
+                canonizedCode = line.ToString();  //записываем в готовую строку с текстом результат удаления комментариев
+                leftCode = new Tokenizer(comboBoxLanguage.SelectedValue.ToString(), canonizedCode);
+                symbolsCount = (uint)canonizedCode.Length;
+                try
+                {
+                    leftCodeTokenShingles = new Shingle(leftCode, 4).Shingles;
+                }
+                catch (ArgumentException ex) 
+                {
+                    MessageBox.Show(ex.Message, "Важное предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    blockFromAddingInDatabase = true; //в базе данных не нужен неполноценный код, который будет доставлять проблемы в дальнейшем, поэтому такой код лучше только сравнивать
+                }
+                try
+                {
+                    leftCodeShingle = new Shingle(leftCode.ToString());
+                }
+                catch (ArgumentException ex)
+                {
+                    MessageBox.Show(ex.Message, "Важное предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    blockFromAddingInDatabase = true;
+                }
             }
             else
             {
-                MessageBox.Show("Левое окно программы не может быть пустым", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Левое окно программы не может быть пустым", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
 
 
 
-
+            bool isEmpty = false; //проверка на пустоту правого окна
+            List<string> canonizedComparableCodes = new List<string>();
             if (FCTBRight.LinesCount > 1 || FCTBRight.Lines[0].Length != 0) //
             {
-                text.Clear();
+                string canonizedCodeRight;
                 StringBuilder line = new StringBuilder("");
                 for (int i = 0; i < FCTBRight.LinesCount; i++) //убираем комментарии в цикле построчно
-                {
-                    line.Append(FCTBRight.Lines[i].ToString());
-                    //Лексер и парсер, поставляемый в ANTLR4 базово имеет проблемы с распознаванием препроцессоров, поэтому лучше удалять символы, которые указывают на препроцессинг
-                    if (comboBoxLanguage.SelectedValue.ToString().Equals("C") || comboBoxLanguage.SelectedValue.ToString().Equals("C++"))
-                        line.Replace("#", "");
-                    text.Append(Regex.Replace(line.ToString(), @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " "));
-                    line.Clear();
-                }
-                rightCode = new Tokenizer(comboBoxLanguage.SelectedValue.ToString(), text.ToString());
+                    line.Append(Regex.Replace(FCTBRight.Lines[i], @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " "));
+                //Лексер и парсер, поставляемый в ANTLR4 базово имеет проблемы с распознаванием препроцессоров, поэтому лучше удалять символы, которые указывают на препроцессинг
+                if (comboBoxLanguage.SelectedValue.ToString().Equals("C") || comboBoxLanguage.SelectedValue.ToString().Equals("C++"))
+                    line.Replace("#", "");
+                canonizedCodeRight = line.ToString();
+                codeCompare.Add(new Tokenizer(comboBoxLanguage.SelectedValue.ToString(), canonizedCodeRight));//добавляем в список кодов информацию из правого окна
+                canonizedComparableCodes.Add(canonizedCodeRight);
             }
             else
             {
-                //ДОПИСАТЬ СЮДА РАБОТУ С БД
-                rightCode = new Tokenizer(comboBoxLanguage.SelectedValue.ToString(), text.ToString());
+                MessageBox.Show("Правое окно не содержит в себе информации. Сравнение будет происходить только на основе элементов из базы данных." +
+                    "Если таких элементов не будет, придется вставить код в правое окно, иначе не с чем сравнивать", "Важное предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                isEmpty = true;
             }
-
-
+            var listFromDB = FetchDataFromDB(symbolsCount, comboBoxLanguage.SelectedValue.ToString()); //ищем в базе данных подобные элементы
+            foreach (var item in listFromDB) //добавляем каждый элемент
+            {
+                canonizedComparableCodes.Add(item.CanonizedCode); //добавляем канонизированный код в список
+                codeCompare.Add(new Tokenizer(item.Language, item.CanonizedCode)); //Добавляем в список токенизированных кодов код из базы данных
+            }
+            if (codeCompare.Count == 0 && isEmpty)
+            {
+                MessageBox.Show("В базе данных не было обнаружено исходных кодов, которые могут удовлетворить условиям совпадения с языком и количеством символов.");
+                return;
+            }
 
 
 
             Comparator cmp = new Comparator();
-            try
+            List<List<float>> percents = new List<List<float>>(); //список процентов плагиата для каждого канонизированного кода
+
+            //запускаем окно ожидания в отдельном потоке
+            WaitingForm wf = new WaitingForm();
+            Thread thread = new Thread(() =>
             {
-                //ТОКЕНЫ    
-                float levenshteinToken = cmp.LevenshteinDistance(leftCode.TokensArray, rightCode.TokensArray);
-                float jaccardToken = -1, diceToken = -1;
-                try
-                {
-                    jaccardToken = cmp.JaccardCoefficient(new Shingle(leftCode, 4).Shingles, new Shingle(rightCode, 4).Shingles); //создаем k-граммы из идентификатор, причем k=4
-                    diceToken = cmp.SorensenDiceCoefficient(new Shingle(leftCode, 4).Shingles, new Shingle(rightCode, 4).Shingles);
-                }
-                catch (ArgumentException ex)
-                {
-                    MessageBox.Show(ex.Message, "Важное предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                float lcsToken = cmp.LongestCommonSubsequence(leftCode.GetIdentificatorsString(), rightCode.GetIdentificatorsString());
-                if (jaccardToken == -1 && diceToken == -1)
-                    cmp.PercentTokens = (levenshteinToken + lcsToken) / 2 * 100;
-                else
-                    cmp.PercentTokens = (levenshteinToken + jaccardToken + diceToken + lcsToken) / 4 * 100;
+                wf.ShowDialog();
+            });
+            thread.Start(); //запускаем поток - он будет работать пока не выполнятся операции ниже
+            //Application.DoEvents();
+            foreach (var item in codeCompare)
+            {
+                percents.Add(cmp.Compare(leftCode, leftCodeTokenShingles, leftCodeShingle, item));
+                 GC.Collect(); //запуск сборки мусора для удаления неиспользуемых более элементов
+            }
+            //после выполнения операций окно ожидания надо закрыть
+            wf.Invoke((MethodInvoker)(() => { 
+                wf.Close();
+            }));
 
 
 
+            Results results = new Results(canonizedComparableCodes, percents);
+            results.Show();
+            float maxPercent = 0;
+            foreach (var item in percents) //цикл для поиска наибольшего процента плагиата среди токенов
+            {
+                if (item[4] > maxPercent)
+                    maxPercent = item[4];
+            }
 
-                //ШИНГЛЫ
-                Shingle left = null, right = null;
-                float levenshteinShingle = -1, jaccardShingle = -1, diceShingle = -1, lcsShingle = -1;
-                try
-                {
-                    left = new Shingle(leftCode.ToString());
-                    right = new Shingle(rightCode.ToString()); //дописать логику когда второе окно пустое
-                }
-                catch (ArgumentException ex)
-                {
-                    MessageBox.Show(ex.Message, "Важное предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                if (left != null && right != null)
-                {
-                    levenshteinShingle = cmp.LevenshteinDistance(left.Shingles, right.Shingles);
-                    jaccardShingle = cmp.JaccardCoefficient(left.Shingles, right.Shingles);
-                    diceShingle = cmp.SorensenDiceCoefficient(left.Shingles, right.Shingles);
-                    lcsShingle = cmp.LongestCommonSubsequence(left.ToString(), right.ToString());
-                    cmp.PercentShingles = (levenshteinShingle + jaccardShingle + diceShingle + lcsShingle) / 4 * 100;
-                }
 
-                if (plagiatPercentSetting > cmp.PercentTokens)
+            labelPlagiatPercent.Text = "Текущее значение схожести: " + maxPercent + "%";
+
+            if (plagiatPercentSetting > maxPercent)
+            {
+                labelPlagiat.Text = "Плагиат: Нет";
+                DialogResult dr = MessageBox.Show("Вы хотите добавить код, размещенный в левом окне в базу данных?", "Добавление в базу данных", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (dr == DialogResult.Yes)
                 {
-                    labelPlagiat.Text = "Плагиат: Нет";
-                    DialogResult dr = MessageBox.Show("Вы хотите добавить код, размещенный в левом окне в базу данных?", "Добавление в базу данных", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                     DBWorker worker = new DBWorker();
-                    if (dr == DialogResult.Yes)
-                    {
-
-                        CodeInfo ci = new CodeInfo(canonizedCode, symbolsCount, comboBoxLanguage.SelectedValue.ToString(), DateTime.Now);
-                        worker.InsertIntoDB(ci);
-                    }
-                    //worker.Find(symbolsCount);
+                    CodeInfo ci = new CodeInfo(canonizedCode, symbolsCount, comboBoxLanguage.SelectedValue.ToString(), DateTime.Now);
+                    worker.InsertIntoDB(ci);
                 }
-                else
-                {
-                    labelPlagiat.Text = "Плагиат: Да";
-                }
-
-                labelPlagiatPercent.Text = "Текущее значение схожести: " + cmp.PercentTokens + "%";
-                MessageBox.Show($"Результат:\nМетод токенов:\nЛевенштейн:{levenshteinToken * 100}%\nЖаккар:{jaccardToken * 100}%\nСёренсен:{diceToken * 100}%\nLCS:{lcsToken * 100}%\tИтог:{cmp.PercentTokens}%\nМетод шинглов:\nЛевенштейн:{levenshteinShingle * 100}%\nЖаккар:{jaccardShingle * 100}%\nСёренсен:{diceShingle * 100}%\nLCS:{lcsShingle * 100}%\tИтог:{cmp.PercentShingles}%");
             }
-            catch (Exception ex)
+            else
             {
-                MessageBox.Show(ex.Message, "Произошла ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Плагиат кода обнаружен. Посмотрите окно с результатами для получения подробной информации","Плагиат!",MessageBoxButtons.OK,MessageBoxIcon.Information);
+                labelPlagiat.Text = "Плагиат: Да";
             }
-
         }
 
         private void buttonShowTokens_Click(object sender, EventArgs e)
@@ -276,7 +283,11 @@ namespace MyCode
                 Properties.Settings.Default.plagiatPercent = plagiatPercentSetting;
                 Properties.Settings.Default.Save();
             }
-                
+        }
+        private List<CodeInfo> FetchDataFromDB(uint length,string language)
+        {
+            DBWorker worker = new DBWorker();
+            return worker.Find(length, language);
         }
     }
 }
