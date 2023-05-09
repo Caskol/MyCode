@@ -34,5 +34,17 @@ namespace MyCode.Properties {
                 this["plagiatPercent"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("25000")]
+        public uint maximumSymbols {
+            get {
+                return ((uint)(this["maximumSymbols"]));
+            }
+            set {
+                this["maximumSymbols"] = value;
+            }
+        }
     }
 }

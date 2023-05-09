@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            groupBox1 = new GroupBox();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Database));
             buttonDelete = new Button();
             panelInfoButton = new Panel();
             panel1 = new Panel();
@@ -38,22 +38,12 @@
             ((System.ComponentModel.ISupportInitialize)DataBaseGrid).BeginInit();
             SuspendLayout();
             // 
-            // groupBox1
-            // 
-            groupBox1.Dock = DockStyle.Top;
-            groupBox1.Location = new Point(0, 0);
-            groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(200, 431);
-            groupBox1.TabIndex = 3;
-            groupBox1.TabStop = false;
-            groupBox1.Text = "Информация:";
-            // 
             // buttonDelete
             // 
             buttonDelete.Dock = DockStyle.Bottom;
-            buttonDelete.Location = new Point(0, 431);
+            buttonDelete.Location = new Point(0, 365);
             buttonDelete.Name = "buttonDelete";
-            buttonDelete.Size = new Size(200, 30);
+            buttonDelete.Size = new Size(200, 96);
             buttonDelete.TabIndex = 2;
             buttonDelete.Text = "Удалить";
             buttonDelete.UseVisualStyleBackColor = true;
@@ -61,7 +51,6 @@
             // 
             // panelInfoButton
             // 
-            panelInfoButton.Controls.Add(groupBox1);
             panelInfoButton.Controls.Add(buttonDelete);
             panelInfoButton.Dock = DockStyle.Right;
             panelInfoButton.Location = new Point(574, 0);
@@ -98,6 +87,7 @@
             ClientSize = new Size(774, 461);
             Controls.Add(panel1);
             Controls.Add(panelInfoButton);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             MinimumSize = new Size(790, 500);
             Name = "Database";
             Text = "Просмотр базы данных";
@@ -109,7 +99,6 @@
         }
 
         #endregion
-        private GroupBox groupBox1;
         private Button buttonDelete;
         private Panel panelInfoButton;
         private Panel panel1;

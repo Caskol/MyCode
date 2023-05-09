@@ -13,10 +13,14 @@ namespace MyCode
     public partial class Settings : Form
     {
         byte plagiat;
-        public Settings(byte plagiarism)
+        uint maximumSymbols;
+        public Settings(byte plagiarism, uint symbols)
         {
             InitializeComponent();
-            trackBarPlagiat.Value = plagiarism;
+            plagiat=plagiarism;
+            maximumSymbols=symbols;
+            trackBarPlagiat.Value = plagiat;
+            numericUpDownSymbols.Value = maximumSymbols;
         }
         public Settings()
         {
@@ -42,10 +46,26 @@ namespace MyCode
         private void buttonSave_Click(object sender, EventArgs e)
         {
             plagiat = Convert.ToByte(trackBarPlagiat.Value);
+            if (numericUpDownSymbols.Value > 25000)
+            {
+                DialogResult dr = MessageBox.Show("Не рекомендуется изменять максимально допустимое количество символов на число, которое больше 25000.\n" +
+                    "Это может повлечь за собой повышенный расход оперативной памяти, нестабильную работу и более долгое сравнение.\n" +
+                    "Изменять это значение стоит только тогда, когда Вы имеете более мощный компьютер с большим количеством оперативной памяти (например, сервер).\n\n\n" +
+                    "Вы действительно хотите изменить это значение?", "Важное предупреждение", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if (dr == DialogResult.Yes)
+                    maximumSymbols = Convert.ToUInt32(numericUpDownSymbols.Value);
+                else
+                    MessageBox.Show("Процент плагиата сохранен. Максимальное количество символов осталось неизменным.");
+            }
+            else
+                maximumSymbols = Convert.ToUInt32(numericUpDownSymbols.Value);
         }
-        public byte GetData()
+        public List<string> GetData()
         {
-            return plagiat;
+            List<string> data = new List<string>();
+            data.Add(plagiat.ToString());
+            data.Add(maximumSymbols.ToString());
+            return data;
         }
     }
 }

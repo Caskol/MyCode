@@ -53,7 +53,7 @@ namespace MyCode
         {
             if (DataBaseGrid.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Нужно обязательно выбрать строки","Важное предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                MessageBox.Show("Нужно обязательно выбрать строки", "Важное предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 return;
             }
             foreach (DataGridViewRow Row in DataBaseGrid.SelectedRows)
@@ -62,7 +62,7 @@ namespace MyCode
             }
             DialogResult dr = MessageBox.Show($"Удалено {DataBaseGrid.SelectedRows.Count} шт.", "Удаление", MessageBoxButtons.OK, MessageBoxIcon.Information);
             UpdateList();
-            
+
         }
     }
 }

@@ -7,7 +7,8 @@ namespace MyCode
 {
     public partial class MainForm : Form
     {
-        byte plagiatPercentSetting = Properties.Settings.Default.plagiatPercent;
+        byte plagiatPercentSetting; 
+        uint maximumSymbolsSetting;
 
         readonly List<String> availableLanguages = new List<String>()
         {
@@ -17,6 +18,8 @@ namespace MyCode
         {
             InitializeComponent();
             comboBoxLanguage.DataSource = availableLanguages;
+            plagiatPercentSetting = Properties.Settings.Default.plagiatPercent;
+            maximumSymbolsSetting = Properties.Settings.Default.maximumSymbols;
         }
 
 
@@ -76,6 +79,7 @@ namespace MyCode
 
         private void buttonCompare_Click(object sender, EventArgs e)
         {
+            
             Tokenizer leftCode; //токенизатор левого окна
             Shingle leftCodeShingle=null;//шинглы из кода левого окна
             List<string> leftCodeTokenShingles=null; //список шинглов на основе токенов (в одном шингле содержится 4 токена для уменьшения количества совпадающих шинглов)
@@ -84,59 +88,68 @@ namespace MyCode
             List<Tokenizer> codeCompare = new List<Tokenizer>(); //создаем список кодов, с которым будет сравниваться основной код (т.е. тот, что введен в левом окне программы)
             bool blockFromAddingInDatabase = false;
 
-            if (FCTBLeft.LinesCount > 1 || FCTBLeft.Lines[0].Length != 0) //
-            {
-                StringBuilder line = new StringBuilder(""); //временная переменная, в которую будет записываться строка, из которой будут удалены комментарии
-                for (int i = 0; i < FCTBLeft.LinesCount; i++) //записываем каждую строку в Stringbuilder
-                {
-                    line.Append(Regex.Replace(FCTBLeft.Lines[i].ToString(), @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " "));
-                }
-                //Лексер и парсер языков C и C++, поставляемые в ANTLR4 базово, имеют проблемы с распознаванием препроцессоров, поэтому лучше удалять символы, которые указывают на препроцессинг
-                if (comboBoxLanguage.SelectedValue.ToString().Equals("C") || comboBoxLanguage.SelectedValue.ToString().Equals("C++"))
-                    line.Replace("#", "");
-                canonizedCode = line.ToString();  //записываем в готовую строку с текстом результат удаления комментариев
-                leftCode = new Tokenizer(comboBoxLanguage.SelectedValue.ToString(), canonizedCode);
-                symbolsCount = (uint)canonizedCode.Length;
-                try
-                {
-                    leftCodeTokenShingles = new Shingle(leftCode, 4).Shingles;
-                }
-                catch (ArgumentException ex) 
-                {
-                    MessageBox.Show(ex.Message, "Важное предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    blockFromAddingInDatabase = true; //в базе данных не нужен неполноценный код, который будет доставлять проблемы в дальнейшем, поэтому такой код лучше только сравнивать
-                }
-                try
-                {
-                    leftCodeShingle = new Shingle(leftCode.ToString());
-                }
-                catch (ArgumentException ex)
-                {
-                    MessageBox.Show(ex.Message, "Важное предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    blockFromAddingInDatabase = true;
-                }
-            }
-            else
+            if (FCTBLeft.LinesCount < 1 && FCTBLeft.Lines[0].Length == 0) //
             {
                 MessageBox.Show("Левое окно программы не может быть пустым", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
 
+            //Левое окно
+            StringBuilder line = new StringBuilder(""); //временная переменная, в которую будет записываться строка, из которой будут удалены комментарии
+            for (int i = 0; i < FCTBLeft.LinesCount; i++) //записываем каждую строку в Stringbuilder
+            {
+                line.Append(Regex.Replace(FCTBLeft.Lines[i].ToString(), @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " "));
+            }
+            //Лексер и парсер языков C и C++, поставляемые в ANTLR4 базово, имеют проблемы с распознаванием препроцессоров, поэтому лучше удалять символы, которые указывают на препроцессинг
+            if (comboBoxLanguage.SelectedValue.ToString().Equals("C") || comboBoxLanguage.SelectedValue.ToString().Equals("C++"))
+                line.Replace("#", "");
+            canonizedCode = line.ToString();  //записываем в готовую строку с текстом результат удаления комментариев
+            symbolsCount = (uint)canonizedCode.Length;
+            if (symbolsCount > maximumSymbolsSetting)
+            {
+                MessageBox.Show($"В целях увеличения быстродействия программы нельзя вводить более 25000 символов в каждое окно. Текущее количество - {symbolsCount}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            leftCode = new Tokenizer(comboBoxLanguage.SelectedValue.ToString(), canonizedCode);
+            try
+            {
+                leftCodeTokenShingles = new Shingle(leftCode, 4).Shingles;
+            }
+            catch (ArgumentException ex)
+            {
+                MessageBox.Show(ex.Message, "Важное предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                blockFromAddingInDatabase = true; //в базе данных не нужен неполноценный код, который будет доставлять проблемы в дальнейшем, поэтому такой код лучше только сравнивать
+            }
+            try
+            {
+                leftCodeShingle = new Shingle(leftCode.ToString());
+            }
+            catch (ArgumentException ex)
+            {
+                MessageBox.Show(ex.Message, "Важное предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                blockFromAddingInDatabase = true;
+            }
 
 
+            //Правое окно
             bool isEmpty = false; //проверка на пустоту правого окна
             List<string> canonizedComparableCodes = new List<string>();
             if (FCTBRight.LinesCount > 1 || FCTBRight.Lines[0].Length != 0) //
             {
                 string canonizedCodeRight;
-                StringBuilder line = new StringBuilder("");
+                line = new StringBuilder("");
                 for (int i = 0; i < FCTBRight.LinesCount; i++) //убираем комментарии в цикле построчно
                     line.Append(Regex.Replace(FCTBRight.Lines[i], @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " "));
                 //Лексер и парсер, поставляемый в ANTLR4 базово имеет проблемы с распознаванием препроцессоров, поэтому лучше удалять символы, которые указывают на препроцессинг
                 if (comboBoxLanguage.SelectedValue.ToString().Equals("C") || comboBoxLanguage.SelectedValue.ToString().Equals("C++"))
                     line.Replace("#", "");
                 canonizedCodeRight = line.ToString();
+                if (canonizedCodeRight.Length > maximumSymbolsSetting)
+                {
+                    MessageBox.Show($"В целях увеличения быстродействия программы нельзя вводить более 25000 символов. Текущее количество - {canonizedCodeRight.Length}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
                 codeCompare.Add(new Tokenizer(comboBoxLanguage.SelectedValue.ToString(), canonizedCodeRight));//добавляем в список кодов информацию из правого окна
                 canonizedComparableCodes.Add(canonizedCodeRight);
             }
@@ -146,6 +159,10 @@ namespace MyCode
                     "Если таких элементов не будет, придется вставить код в правое окно, иначе не с чем сравнивать", "Важное предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 isEmpty = true;
             }
+
+
+
+            //Работа с базой данных
             var listFromDB = FetchDataFromDB(symbolsCount, comboBoxLanguage.SelectedValue.ToString()); //ищем в базе данных подобные элементы
             foreach (var item in listFromDB) //добавляем каждый элемент
             {
@@ -159,7 +176,7 @@ namespace MyCode
             }
 
 
-
+            //Сравнение элементов
             Comparator cmp = new Comparator();
             List<List<float>> percents = new List<List<float>>(); //список процентов плагиата для каждого канонизированного кода
 
@@ -170,18 +187,18 @@ namespace MyCode
                 wf.ShowDialog();
             });
             thread.Start(); //запускаем поток - он будет работать пока не выполнятся операции ниже
-            //Application.DoEvents();
-            foreach (var item in codeCompare)
+            //Распараллеливаем процесс сравнения для каждого кода
+            Parallel.For(0, codeCompare.Count, i =>
             {
-                percents.Add(cmp.Compare(leftCode, leftCodeTokenShingles, leftCodeShingle, item));
-            }
+                percents.Add(cmp.Compare(leftCode, leftCodeTokenShingles, leftCodeShingle, codeCompare[i],i));
+            });
             //после выполнения операций окно ожидания надо закрыть
             wf.Invoke((MethodInvoker)(() => { 
                 wf.Close();
             }));
 
 
-
+            //Вывод результатов
             Results results = new Results(canonizedComparableCodes, percents);
             results.Show();
             float maxPercent = 0;
@@ -275,11 +292,14 @@ namespace MyCode
 
         private void SettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Settings window = new Settings(plagiatPercentSetting);
+            Settings window = new Settings(plagiatPercentSetting,maximumSymbolsSetting);
             if (window.ShowDialog() == DialogResult.OK)
             {
-                plagiatPercentSetting = window.GetData();
+                List<string> data = window.GetData();
+                Byte.TryParse(data[0],out plagiatPercentSetting);
+                UInt32.TryParse(data[1], out maximumSymbolsSetting);
                 Properties.Settings.Default.plagiatPercent = plagiatPercentSetting;
+                Properties.Settings.Default.maximumSymbols = maximumSymbolsSetting;
                 Properties.Settings.Default.Save();
             }
         }

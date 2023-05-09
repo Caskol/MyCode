@@ -34,18 +34,18 @@ namespace MyCode
             for (int i = 0; i < results.Count; i++)
             {
                 dr = data.NewRow();
-                dr[0] = canonizedCode[i];
-                dr[1] = canonizedCode[i].Length;
-                dr[2] = results[i][0];
-                dr[3] = results[i][1];
-                dr[4] = results[i][2];
-                dr[5] = results[i][3];
-                dr[6] = results[i][4];
-                dr[7] = results[i][5];
-                dr[8] = results[i][6];
-                dr[9] = results[i][7];
-                dr[10] = results[i][8];
-                dr[11] = results[i][9];
+                dr[0] = canonizedCode[(int)results[i][0]];
+                dr[1] = canonizedCode[(int)results[i][0]].Length;
+                dr[2] = results[i][1];
+                dr[3] = results[i][2];
+                dr[4] = results[i][3];
+                dr[5] = results[i][4];
+                dr[6] = results[i][5];
+                dr[7] = results[i][6];
+                dr[8] = results[i][7];
+                dr[9] = results[i][8];
+                dr[10] = results[i][9];
+                dr[11] = results[i][10];
                 data.Rows.Add(dr);
             }
             bindingSource.DataSource = data;

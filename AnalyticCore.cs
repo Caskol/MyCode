@@ -228,7 +228,7 @@ namespace MyCode
     }
     public class Comparator
     {
-        private float percentageTokens=0;
+        private float percentageTokens = 0;
         private float percentageShingles = 0;
         public float PercentTokens { get { return percentageTokens; } set { percentageTokens = value; } }
         public float PercentShingles { get { return percentageShingles; } set { percentageShingles = value; } }
@@ -240,45 +240,40 @@ namespace MyCode
         /// <returns>Процент совпадения фрагментов</returns>
         public float LevenshteinDistance<T>(List<T> array1, List<T> array2)
         {
-            uint stepCount=0;
-            if (array1.Count != 0 || array2.Count != 0)
+            if (array1.Count == 0 || array2.Count == 0)
+                throw new ArgumentNullException("Как минимум один из сравниваемых массивов был пустым");
+            ushort stepCount = 0;
+            ushort[,] LevenshteinArray = new ushort[array1.Count, array2.Count];
+            for (int i = 0; i < array1.Count; i++) //столбец
             {
-                uint[,] LevenshteinArray = new uint[array1.Count, array2.Count];
-                for (ushort i = 0; i < array1.Count; i++) //столбец
+                LevenshteinArray[i, 0] = (ushort)i;//первый столбец заполняем порядковыми цифрами 
+                for (int j = 1; j < array2.Count; j++) //строка
                 {
-                    LevenshteinArray[i, 0] = i;//первый столбец заполняем порядковыми цифрами 
-                    for (ushort j = 1; j < array2.Count; j++) //строка
+                    if (i == 0) //если идёт первый столбец, то заполняем его порядковыми цифрами
+                        LevenshteinArray[i, j] = (ushort)j;//первый столбец заполняем порядковыми цифрами 
+                    else
                     {
-                        if (i == 0) //если идёт первый столбец, то заполняем его порядковыми цифрами
-                            LevenshteinArray[i, j] = j;//первый столбец заполняем порядковыми цифрами 
-                        else
+                        if (array1 is List<Tuple<int, string, string>> tokens1 && array2 is List<Tuple<int, string, string>> tokens2) //преобразовываем T в тип Tuple
                         {
-                            if (array1 is List<Tuple<int, string, string>> tokens1 && array2 is List<Tuple<int, string, string>> tokens2) //преобразовываем T в тип Tuple
-                            {
-                                if (!string.Equals(tokens1[i - 1].Item2, tokens2[j - 1].Item2)) //если i-й токен первого массива не совпадает с j-м токеном второго массива
-                                    LevenshteinArray[i, j] = Math.Min(Math.Min(LevenshteinArray[i - 1, j] + 1,LevenshteinArray[i, j - 1] + 1), LevenshteinArray[i - 1, j - 1] + 1);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0)+1)
-                                else
-                                    LevenshteinArray[i, j] = Math.Min(Math.Min(LevenshteinArray[i - 1, j] + 1, LevenshteinArray[i, j - 1] + 1), LevenshteinArray[i - 1, j - 1]);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0))
-                            }
-                            else if (typeof(T) == typeof(string))
-                            {
-                                if (!string.Equals(array1[i - 1], array2[j - 1])) //если i-й шингл первого массива не совпадает с j-м шинглом второго массива
-                                    LevenshteinArray[i, j] = Math.Min(Math.Min(LevenshteinArray[i - 1, j] + 1, LevenshteinArray[i, j - 1] + 1), LevenshteinArray[i - 1, j - 1] + 1);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0)+1)
-                                else
-                                    LevenshteinArray[i, j] = Math.Min(Math.Min(LevenshteinArray[i - 1, j] + 1, LevenshteinArray[i, j - 1] + 1), LevenshteinArray[i - 1, j - 1]);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0))
-
-                            }
+                            if (!string.Equals(tokens1[i - 1].Item2, tokens2[j - 1].Item2)) //если i-й токен первого массива не совпадает с j-м токеном второго массива
+                                LevenshteinArray[i, j] = (ushort)Math.Min(Math.Min(LevenshteinArray[i - 1, j] + 1, LevenshteinArray[i, j - 1] + 1), LevenshteinArray[i - 1, j - 1] + 1);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0)+1)
                             else
-                                throw new ArgumentException("Как минимум один из переданных списков не содержит объектов типа string или Tuple");
+                                LevenshteinArray[i, j] = (ushort)Math.Min(Math.Min(LevenshteinArray[i - 1, j] + 1, LevenshteinArray[i, j - 1] + 1), LevenshteinArray[i - 1, j - 1]);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0))
                         }
+                        else if (typeof(T) == typeof(string))
+                        {
+                            if (!string.Equals(array1[i - 1], array2[j - 1])) //если i-й шингл первого массива не совпадает с j-м шинглом второго массива
+                                LevenshteinArray[i, j] = (ushort)Math.Min(Math.Min(LevenshteinArray[i - 1, j] + 1, LevenshteinArray[i, j - 1] + 1), LevenshteinArray[i - 1, j - 1] + 1);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0)+1)
+                            else
+                                LevenshteinArray[i, j] = (ushort)Math.Min(Math.Min(LevenshteinArray[i - 1, j] + 1, LevenshteinArray[i, j - 1] + 1), LevenshteinArray[i - 1, j - 1]);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0))
+
+                        }
+                        else
+                            throw new ArgumentException("Как минимум один из переданных списков не содержит объектов типа string или Tuple");
                     }
                 }
-                stepCount = LevenshteinArray[array1.Count - 1, array2.Count - 1];
             }
-            else
-            {
-                throw new ArgumentNullException("Как минимум один из сравниваемых массивов был пустым");
-            }
+            stepCount = LevenshteinArray[array1.Count - 1, array2.Count - 1];
             return (1 - (float)stepCount / (float)Math.Max(array1.Count, array2.Count));
         }
         /// <summary>
@@ -290,18 +285,13 @@ namespace MyCode
         /// <exception cref="ArgumentNullException"></exception>
         public float JaccardCoefficient(List<string> array1, List<string> array2)
         {
-            int intersection, union;
-            if (array1.Count != 0 || array2.Count != 0)
-            {
-                var hashedArray1 = new HashSet<string>(array1);//убираем повторяющиеся элементы
-                var hashedArray2 = new HashSet<string>(array2);
-                intersection = hashedArray1.Intersect(hashedArray2).Count(); //получаем значение пересечения двух массивов между собой (т.е. количество элементов, которые присутствуют в обоих массивах)
-                union = array1.Union(array2).Count();//получаем значение объединения двух массивов между собой (т.е. общее количество элементов)
-            }
-            else
-            {
+            if (array1.Count == 0 || array2.Count == 0)
                 throw new ArgumentNullException("Как минимум один из переданных списков не содержит объектов типа string или Tuple");
-            }
+            int intersection, union;
+            var hashedArray1 = new HashSet<string>(array1);//убираем повторяющиеся элементы
+            var hashedArray2 = new HashSet<string>(array2);
+            intersection = hashedArray1.Intersect(hashedArray2).Count(); //получаем значение пересечения двух массивов между собой (т.е. количество элементов, которые присутствуют в обоих массивах)
+            union = array1.Union(array2).Count();//получаем значение объединения двух массивов между собой (т.е. общее количество элементов)
             return (float)intersection / union;
         }
         /// <summary>
@@ -312,20 +302,15 @@ namespace MyCode
         /// <returns></returns>
         public float SorensenDiceCoefficient(List<string> gramms1, List<string> gramms2)
         {
-            if (gramms1.Count != 0 || gramms2.Count!=0)
-            {
-                var hashedGramms1 = new HashSet<string>(gramms1);
-                var hashedGramms2 = new HashSet<string>(gramms2);
-                var intersection = hashedGramms1.Intersect(hashedGramms2).Count();
-                var total = hashedGramms1.Count + hashedGramms2.Count;
-                hashedGramms1 = null;
-                hashedGramms2 = null;
-                return (float)(2 * intersection) / total;
-            }
-            else
-            {
+            if (gramms1.Count == 0 || gramms2.Count == 0)
                 throw new ArgumentNullException("Как минимум один из переданных списков не содержит объектов типа string");
-            }
+            var hashedGramms1 = new HashSet<string>(gramms1);
+            var hashedGramms2 = new HashSet<string>(gramms2);
+            var intersection = hashedGramms1.Intersect(hashedGramms2).Count();
+            var total = hashedGramms1.Count + hashedGramms2.Count;
+            hashedGramms1 = null;
+            hashedGramms2 = null;
+            return (float)(2 * intersection) / total;
         }
         /// <summary>
         /// Коэффициент схожести на основе количества символов, входящих в наибольную общую подпоследовательность (LCS)
@@ -334,38 +319,34 @@ namespace MyCode
         /// <param name="y"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public float LongestCommonSubsequence(string x,string y)
+        public float LongestCommonSubsequence(string x, string y)
         {
-            if (x.Length > 0 && y.Length > 0)
-            {
-                uint[,] array = new uint[x.Length + 1, y.Length + 1]; //создаем матрицу, которая будет содержать количество совпадений символов
-                for (int i = 0; i < array.GetLength(0); i++)//заполняем первый столбец нулями
-                    array[i, 0] = 0;
-                for (int i = 0; i < array.GetLength(1); i++)//заполняем первую строку нулями
-                    array[0, i] = 0;
-                //составляем матрицу для нахождения длины
-                for (int i=1; i < array.GetLength(0); i++) //строка x
-                {
-                    for (int j = 1; j < array.GetLength(1); j++) //столбец y
-                    {
-                        if (y[j - 1].Equals(x[i - 1])) //если j-й элемент строки совпадает с i-м элементов столбца
-                            array[i, j] = (ushort)(array[i-1, j - 1]+1);//если совпадает, то берем значения из диагональной ячейки и прибавляем 1
-                        else
-                            array[i, j] = Math.Max(array[i - 1, j], array[i, j - 1]);//если не совпадает, то берем максимальный из значений левого символа или верхнего символа
-                    }
-                }
-                //сами подпоследовательности нас не интересуют, т.к. необходимо найти коэффициент схожести, а не само сходство. Это будет количество совпадений, деленное на длину текста максимальной длины
-                uint lcsLength = array[x.Length, y.Length]; //берем самый последний элемент
-                array=null; //очищаем память
-                return (float)lcsLength/Math.Max(x.Length, y.Length); //и возвращаем его, поделив на длину текста
-            }
-            else
+            if (x.Length <= 0 || y.Length <= 0)
                 throw new ArgumentNullException("Одна из строк была пуста");
+            ushort[,] array = new ushort[x.Length + 1, y.Length + 1]; //создаем матрицу, которая будет содержать количество совпадений символов
+            for (int i = 0; i < array.GetLength(0); i++)//заполняем первый столбец нулями
+                array[i, 0] = 0;
+            for (int i = 0; i < array.GetLength(1); i++)//заполняем первую строку нулями
+                array[0, i] = 0;
+            //составляем матрицу для нахождения длины
+            for (int i = 1; i < array.GetLength(0); i++) //строка x
+            {
+                for (int j = 1; j < array.GetLength(1); j++) //столбец y
+                {
+                    if (y[j - 1].Equals(x[i - 1])) //если j-й элемент строки совпадает с i-м элементов столбца
+                        array[i, j] = (ushort)(array[i - 1, j - 1] + 1);//если совпадает, то берем значения из диагональной ячейки и прибавляем 1
+                    else
+                        array[i, j] = Math.Max(array[i - 1, j], array[i, j - 1]);//если не совпадает, то берем максимальный из значений левого символа или верхнего символа
+                }
+            }
+            //сами подпоследовательности нас не интересуют, т.к. необходимо найти коэффициент схожести, а не само сходство. Это будет количество совпадений, деленное на длину текста максимальной длины
+            int lcsLength = array[x.Length, y.Length]; //берем самый последний элемент
+            return (float)lcsLength / Math.Max(x.Length, y.Length); //и возвращаем его, поделив на длину текста
         }
 
-        public List<float> Compare(Tokenizer leftCode, List<string> leftCodeTokenShingles, Shingle leftCodeShingles, Tokenizer rightCode)
+        public List<float> Compare(Tokenizer leftCode, List<string> leftCodeTokenShingles, Shingle leftCodeShingles, Tokenizer rightCode, int order)
         {
-            List<float> result = new List<float>();
+            List<float> result = new List<float>() { order };//создаем список результатов и помещаем номер сравниваемого текста
             //ТОКЕНЫ    
             float levenshteinToken = LevenshteinDistance(leftCode.TokensArray, rightCode.TokensArray);
             float jaccardToken = -1, diceToken = -1;
@@ -374,10 +355,7 @@ namespace MyCode
                 jaccardToken = JaccardCoefficient(leftCodeTokenShingles, new Shingle(rightCode, 4).Shingles); //создаем k-граммы из идентификатор, причем k=4
                 diceToken = SorensenDiceCoefficient(leftCodeTokenShingles, new Shingle(rightCode, 4).Shingles);
             }
-            catch (Exception)
-            {
-                return result;
-            }
+            catch (Exception) { }
             float lcsToken = LongestCommonSubsequence(leftCode.GetIdentificatorsString(), rightCode.GetIdentificatorsString());
             if (jaccardToken == -1 && diceToken == -1)
                 PercentTokens = (levenshteinToken + lcsToken) / 2 * 100;
@@ -388,7 +366,7 @@ namespace MyCode
             result.Add(diceToken*100);
             result.Add(lcsToken*100);
             result.Add(PercentTokens);
-
+            GC.Collect();
 
             //ШИНГЛЫ
             Shingle right = null;
@@ -397,10 +375,7 @@ namespace MyCode
             {
                 right = new Shingle(rightCode.ToString());
             }
-            catch (ArgumentException ex)
-            {
-                return result;
-            }
+            catch (ArgumentException) { }
             if (leftCodeShingles != null && right != null)
             {
                 levenshteinShingle = LevenshteinDistance(leftCodeShingles.Shingles, right.Shingles);

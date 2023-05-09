@@ -5,5 +5,8 @@
     <Setting Name="plagiatPercent" Type="System.Byte" Scope="User">
       <Value Profile="(Default)">70</Value>
     </Setting>
+    <Setting Name="maximumSymbols" Type="System.UInt32" Scope="User">
+      <Value Profile="(Default)">25000</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

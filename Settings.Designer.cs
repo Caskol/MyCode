@@ -35,8 +35,11 @@
             trackBarPlagiat = new TrackBar();
             numericUpDownPlagiat = new NumericUpDown();
             buttonSave = new Button();
+            labelMaximumSymbols = new Label();
+            numericUpDownSymbols = new NumericUpDown();
             ((System.ComponentModel.ISupportInitialize)trackBarPlagiat).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownPlagiat).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownSymbols).BeginInit();
             SuspendLayout();
             // 
             // labelPlagiarism
@@ -81,11 +84,32 @@
             buttonSave.UseVisualStyleBackColor = true;
             buttonSave.Click += buttonSave_Click;
             // 
+            // labelMaximumSymbols
+            // 
+            labelMaximumSymbols.AutoSize = true;
+            labelMaximumSymbols.Location = new Point(12, 76);
+            labelMaximumSymbols.Name = "labelMaximumSymbols";
+            labelMaximumSymbols.Size = new Size(164, 15);
+            labelMaximumSymbols.TabIndex = 4;
+            labelMaximumSymbols.Text = "Макс. количество символов";
+            // 
+            // numericUpDownSymbols
+            // 
+            numericUpDownSymbols.Location = new Point(292, 74);
+            numericUpDownSymbols.Maximum = new decimal(new int[] { 70000, 0, 0, 0 });
+            numericUpDownSymbols.Minimum = new decimal(new int[] { 10000, 0, 0, 0 });
+            numericUpDownSymbols.Name = "numericUpDownSymbols";
+            numericUpDownSymbols.Size = new Size(120, 23);
+            numericUpDownSymbols.TabIndex = 5;
+            numericUpDownSymbols.Value = new decimal(new int[] { 10000, 0, 0, 0 });
+            // 
             // Settings
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(424, 171);
+            Controls.Add(numericUpDownSymbols);
+            Controls.Add(labelMaximumSymbols);
             Controls.Add(buttonSave);
             Controls.Add(numericUpDownPlagiat);
             Controls.Add(trackBarPlagiat);
@@ -100,6 +124,7 @@
             Load += Settings_Load;
             ((System.ComponentModel.ISupportInitialize)trackBarPlagiat).EndInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownPlagiat).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownSymbols).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -111,5 +136,7 @@
         private TrackBar trackBarPlagiat;
         private NumericUpDown numericUpDownPlagiat;
         private Button buttonSave;
+        private Label labelMaximumSymbols;
+        private NumericUpDown numericUpDownSymbols;
     }
 }
