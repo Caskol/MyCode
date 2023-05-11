@@ -79,7 +79,6 @@ namespace MyCode
 
         private void buttonCompare_Click(object sender, EventArgs e)
         {
-            
             Tokenizer leftCode; //токенизатор левого окна
             Shingle leftCodeShingle=null;//шинглы из кода левого окна
             List<string> leftCodeTokenShingles=null; //список шинглов на основе токенов (в одном шингле содержится 4 токена для уменьшения количества совпадающих шинглов)
@@ -108,7 +107,7 @@ namespace MyCode
             symbolsCount = (uint)canonizedCode.Length;
             if (symbolsCount > maximumSymbolsSetting)
             {
-                MessageBox.Show($"В целях увеличения быстродействия программы нельзя вводить более 25000 символов в каждое окно. Текущее количество - {symbolsCount}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Текущие настройки программы не позволяют ввести {symbolsCount} символов в оба окна. Нельзя вводить более {maximumSymbolsSetting} символов в каждое окно.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             leftCode = new Tokenizer(comboBoxLanguage.SelectedValue.ToString(), canonizedCode);

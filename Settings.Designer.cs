@@ -56,11 +56,11 @@
             // 
             trackBarPlagiat.Location = new Point(125, 28);
             trackBarPlagiat.Maximum = 100;
-            trackBarPlagiat.Minimum = 20;
+            trackBarPlagiat.Minimum = 40;
             trackBarPlagiat.Name = "trackBarPlagiat";
             trackBarPlagiat.Size = new Size(237, 45);
             trackBarPlagiat.TabIndex = 1;
-            trackBarPlagiat.Value = 20;
+            trackBarPlagiat.Value = 40;
             trackBarPlagiat.ValueChanged += trackBarPlagiat_ValueChanged;
             // 
             // numericUpDownPlagiat
@@ -70,7 +70,7 @@
             numericUpDownPlagiat.Name = "numericUpDownPlagiat";
             numericUpDownPlagiat.Size = new Size(47, 23);
             numericUpDownPlagiat.TabIndex = 2;
-            numericUpDownPlagiat.Value = new decimal(new int[] { 20, 0, 0, 0 });
+            numericUpDownPlagiat.Value = new decimal(new int[] { 40, 0, 0, 0 });
             numericUpDownPlagiat.ValueChanged += numericUpDownPlagiat_ValueChanged;
             // 
             // buttonSave
@@ -96,7 +96,7 @@
             // numericUpDownSymbols
             // 
             numericUpDownSymbols.Location = new Point(292, 74);
-            numericUpDownSymbols.Maximum = new decimal(new int[] { 70000, 0, 0, 0 });
+            numericUpDownSymbols.Maximum = new decimal(new int[] { 60000, 0, 0, 0 });
             numericUpDownSymbols.Minimum = new decimal(new int[] { 10000, 0, 0, 0 });
             numericUpDownSymbols.Name = "numericUpDownSymbols";
             numericUpDownSymbols.Size = new Size(120, 23);

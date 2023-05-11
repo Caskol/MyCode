@@ -17,8 +17,8 @@ namespace MyCode
         public Settings(byte plagiarism, uint symbols)
         {
             InitializeComponent();
-            plagiat=plagiarism;
-            maximumSymbols=symbols;
+            plagiat = plagiarism;
+            maximumSymbols = symbols;
             trackBarPlagiat.Value = plagiat;
             numericUpDownSymbols.Value = maximumSymbols;
         }

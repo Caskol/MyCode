@@ -243,38 +243,40 @@ namespace MyCode
             if (array1.Count == 0 || array2.Count == 0)
                 throw new ArgumentNullException("Как минимум один из сравниваемых массивов был пустым");
             ushort stepCount = 0;
-            ushort[,] LevenshteinArray = new ushort[array1.Count, array2.Count];
-            for (int i = 0; i < array1.Count; i++) //столбец
+            ushort[] row1 = new ushort[array2.Count+1];//нам не нужно хранить все строки
+            ushort[] row2 = new ushort[array2.Count+1];
+            for (int i = 1; i < array1.Count+1; i++) //строки
             {
-                LevenshteinArray[i, 0] = (ushort)i;//первый столбец заполняем порядковыми цифрами 
-                for (int j = 1; j < array2.Count; j++) //строка
+                row1[0] = (ushort)(i - 1);
+                row2[0] = (ushort)i;
+                for (int j = 1; j<array2.Count + 1;j++)
                 {
-                    if (i == 0) //если идёт первый столбец, то заполняем его порядковыми цифрами
-                        LevenshteinArray[i, j] = (ushort)j;//первый столбец заполняем порядковыми цифрами 
+                    if (i - 1 == 0) //если это первая итерация основного цикла
+                        row1[j] = (ushort)j;
                     else
                     {
                         if (array1 is List<Tuple<int, string, string>> tokens1 && array2 is List<Tuple<int, string, string>> tokens2) //преобразовываем T в тип Tuple
                         {
                             if (!string.Equals(tokens1[i - 1].Item2, tokens2[j - 1].Item2)) //если i-й токен первого массива не совпадает с j-м токеном второго массива
-                                LevenshteinArray[i, j] = (ushort)Math.Min(Math.Min(LevenshteinArray[i - 1, j] + 1, LevenshteinArray[i, j - 1] + 1), LevenshteinArray[i - 1, j - 1] + 1);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0)+1)
-                            else
-                                LevenshteinArray[i, j] = (ushort)Math.Min(Math.Min(LevenshteinArray[i - 1, j] + 1, LevenshteinArray[i, j - 1] + 1), LevenshteinArray[i - 1, j - 1]);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0))
+                                row2[j]=(ushort)Math.Min(Math.Min(row1[j] + 1, row2[j - 1] + 1), row1[j - 1] + 1);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0)+1)
+                             else
+                                row2[j] = (ushort)Math.Min(Math.Min(row1[j] + 1, row2[j - 1] + 1), row1[j - 1]);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0))
                         }
                         else if (typeof(T) == typeof(string))
                         {
                             if (!string.Equals(array1[i - 1], array2[j - 1])) //если i-й шингл первого массива не совпадает с j-м шинглом второго массива
-                                LevenshteinArray[i, j] = (ushort)Math.Min(Math.Min(LevenshteinArray[i - 1, j] + 1, LevenshteinArray[i, j - 1] + 1), LevenshteinArray[i - 1, j - 1] + 1);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0)+1)
+                                row2[j] = (ushort)Math.Min(Math.Min(row1[j] + 1, row2[j - 1] + 1), row1[j - 1] + 1);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0)+1)
                             else
-                                LevenshteinArray[i, j] = (ushort)Math.Min(Math.Min(LevenshteinArray[i - 1, j] + 1, LevenshteinArray[i, j - 1] + 1), LevenshteinArray[i - 1, j - 1]);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0))
-
+                                row2[j] = (ushort)Math.Min(Math.Min(row1[j] + 1, row2[j - 1] + 1), row1[j - 1]);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0))
                         }
                         else
                             throw new ArgumentException("Как минимум один из переданных списков не содержит объектов типа string или Tuple");
                     }
                 }
+                Array.Copy(row2, row1, row1.Length);//копируем второй ряд и вставляем его вместо первого
             }
-            stepCount = LevenshteinArray[array1.Count - 1, array2.Count - 1];
-            return (1 - (float)stepCount / (float)Math.Max(array1.Count, array2.Count));
+            stepCount = row2.Last();
+            return 1 - (float)stepCount / (float)Math.Max(array1.Count, array2.Count);
         }
         /// <summary>
         /// Коэффициент Жаккара для вычисления степени схожести двух массивов. Используется сравнение уникальных элементов
@@ -323,24 +325,23 @@ namespace MyCode
         {
             if (x.Length <= 0 || y.Length <= 0)
                 throw new ArgumentNullException("Одна из строк была пуста");
-            ushort[,] array = new ushort[x.Length + 1, y.Length + 1]; //создаем матрицу, которая будет содержать количество совпадений символов
-            for (int i = 0; i < array.GetLength(0); i++)//заполняем первый столбец нулями
-                array[i, 0] = 0;
-            for (int i = 0; i < array.GetLength(1); i++)//заполняем первую строку нулями
-                array[0, i] = 0;
-            //составляем матрицу для нахождения длины
-            for (int i = 1; i < array.GetLength(0); i++) //строка x
+            ushort[] row1 = new ushort[x.Length + 1];
+            ushort[] row2 = new ushort[y.Length + 1];
+            for (int i=1;i<x.Length+1;i++)
             {
-                for (int j = 1; j < array.GetLength(1); j++) //столбец y
+                row1[0] = 0;
+                row2[0] = 0;
+                for (int j = 1; j < y.Length + 1; j++) //столбец y
                 {
                     if (y[j - 1].Equals(x[i - 1])) //если j-й элемент строки совпадает с i-м элементов столбца
-                        array[i, j] = (ushort)(array[i - 1, j - 1] + 1);//если совпадает, то берем значения из диагональной ячейки и прибавляем 1
+                        row2[j] = (ushort)(row1[j - 1] + 1);//если совпадает, то берем значения из диагональной ячейки и прибавляем 1
                     else
-                        array[i, j] = Math.Max(array[i - 1, j], array[i, j - 1]);//если не совпадает, то берем максимальный из значений левого символа или верхнего символа
+                        row2[j] = Math.Max(row1[j], row2[j - 1]);//если не совпадает, то берем максимальный из значений левого символа или верхнего символа
                 }
+                Array.Copy(row2 , row1, row2.Length);
             }
             //сами подпоследовательности нас не интересуют, т.к. необходимо найти коэффициент схожести, а не само сходство. Это будет количество совпадений, деленное на длину текста максимальной длины
-            int lcsLength = array[x.Length, y.Length]; //берем самый последний элемент
+            int lcsLength = row2.Last(); //берем самый последний элемент
             return (float)lcsLength / Math.Max(x.Length, y.Length); //и возвращаем его, поделив на длину текста
         }
 
