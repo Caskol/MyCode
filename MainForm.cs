@@ -1,5 +1,6 @@
 using FastColoredTextBoxNS;
 using System.Configuration;
+using System.Diagnostics.Eventing.Reader;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -7,7 +8,7 @@ namespace MyCode
 {
     public partial class MainForm : Form
     {
-        byte plagiatPercentSetting; 
+        byte plagiatPercentSetting;
         uint maximumSymbolsSetting;
 
         readonly List<String> availableLanguages = new List<String>()
@@ -80,8 +81,8 @@ namespace MyCode
         private void buttonCompare_Click(object sender, EventArgs e)
         {
             Tokenizer leftCode; //токенизатор левого окна
-            Shingle leftCodeShingle=null;//шинглы из кода левого окна
-            List<string> leftCodeTokenShingles=null; //список шинглов на основе токенов (в одном шингле содержится 4 токена для уменьшения количества совпадающих шинглов)
+            Shingle leftCodeShingle = null;//шинглы из кода левого окна
+            List<string> leftCodeTokenShingles = null; //список шинглов на основе токенов (в одном шингле содержится 4 токена для уменьшения количества совпадающих шинглов)
             uint symbolsCount; //количество символов в канонизированном тексте для потенциальной записи в базу данных
             string canonizedCode; //строка с канонизированным кодом
             List<Tokenizer> codeCompare = new List<Tokenizer>(); //создаем список кодов, с которым будет сравниваться основной код (т.е. тот, что введен в левом окне программы)
@@ -96,13 +97,20 @@ namespace MyCode
 
             //Левое окно
             StringBuilder line = new StringBuilder(""); //временная переменная, в которую будет записываться строка, из которой будут удалены комментарии
+            string tempLine; 
             for (int i = 0; i < FCTBLeft.LinesCount; i++) //записываем каждую строку в Stringbuilder
             {
-                line.Append(Regex.Replace(FCTBLeft.Lines[i].ToString(), @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " "));
+                tempLine = Regex.Replace(FCTBLeft.Lines[i].ToString(), @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " ");
+                if (comboBoxLanguage.SelectedValue.ToString().Equals("C") || comboBoxLanguage.SelectedValue.ToString().Equals("C++") || comboBoxLanguage.SelectedValue.ToString().Equals("Python"))
+                {
+                    if (tempLine.IndexOf("#") < 0)
+                        line.Append(tempLine);
+                    else if (tempLine.IndexOf("#") > 0)
+                        line.Append(tempLine.Substring(0, tempLine.IndexOf("#")));
+                }
+                else
+                    line.Append(tempLine);
             }
-            //Лексер и парсер языков C и C++, поставляемые в ANTLR4 базово, имеют проблемы с распознаванием препроцессоров, поэтому лучше удалять символы, которые указывают на препроцессинг
-            if (comboBoxLanguage.SelectedValue.ToString().Equals("C") || comboBoxLanguage.SelectedValue.ToString().Equals("C++"))
-                line.Replace("#", "");
             canonizedCode = line.ToString();  //записываем в готовую строку с текстом результат удаления комментариев
             symbolsCount = (uint)canonizedCode.Length;
             if (symbolsCount > maximumSymbolsSetting)
@@ -139,10 +147,18 @@ namespace MyCode
                 string canonizedCodeRight;
                 line = new StringBuilder("");
                 for (int i = 0; i < FCTBRight.LinesCount; i++) //убираем комментарии в цикле построчно
-                    line.Append(Regex.Replace(FCTBRight.Lines[i], @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " "));
-                //Лексер и парсер, поставляемый в ANTLR4 базово имеет проблемы с распознаванием препроцессоров, поэтому лучше удалять символы, которые указывают на препроцессинг
-                if (comboBoxLanguage.SelectedValue.ToString().Equals("C") || comboBoxLanguage.SelectedValue.ToString().Equals("C++"))
-                    line.Replace("#", "");
+                {
+                    tempLine = Regex.Replace(FCTBRight.Lines[i].ToString(), @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " ");
+                    if (comboBoxLanguage.SelectedValue.ToString().Equals("C") || comboBoxLanguage.SelectedValue.ToString().Equals("C++") || comboBoxLanguage.SelectedValue.ToString().Equals("Python"))
+                    {
+                        if (tempLine.IndexOf("#") < 0)
+                            line.Append(tempLine);
+                        else if (tempLine.IndexOf("#") > 0)
+                            line.Append(tempLine.Substring(0, tempLine.IndexOf("#")));
+                    }
+                    else
+                        line.Append(tempLine);
+                }
                 canonizedCodeRight = line.ToString();
                 if (canonizedCodeRight.Length > maximumSymbolsSetting)
                 {
@@ -189,10 +205,11 @@ namespace MyCode
             //Распараллеливаем процесс сравнения для каждого кода
             Parallel.For(0, codeCompare.Count, i =>
             {
-                percents.Add(cmp.Compare(leftCode, leftCodeTokenShingles, leftCodeShingle, codeCompare[i],i));
+                percents.Add(cmp.Compare(leftCode, leftCodeTokenShingles, leftCodeShingle, codeCompare[i], i));
             });
             //после выполнения операций окно ожидания надо закрыть
-            wf.Invoke((MethodInvoker)(() => { 
+            wf.Invoke((MethodInvoker)(() =>
+            {
                 wf.Close();
             }));
 
@@ -203,8 +220,8 @@ namespace MyCode
             float maxPercent = 0;
             foreach (var item in percents) //цикл для поиска наибольшего процента плагиата среди токенов
             {
-                if (item[4] > maxPercent)
-                    maxPercent = item[4];
+                if (item[5] > maxPercent)
+                    maxPercent = item[5];
             }
 
 
@@ -223,7 +240,7 @@ namespace MyCode
             }
             else
             {
-                MessageBox.Show("Плагиат кода обнаружен. Посмотрите окно с результатами для получения подробной информации","Плагиат!",MessageBoxButtons.OK,MessageBoxIcon.Information);
+                MessageBox.Show("Плагиат кода обнаружен. Посмотрите окно с результатами для получения подробной информации", "Плагиат!", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 labelPlagiat.Text = "Плагиат: Да";
             }
         }
@@ -237,7 +254,17 @@ namespace MyCode
             }
             try
             {
-                TokensReview window = new TokensReview(FCTBLeft.Text, comboBoxLanguage.Text);
+                StringBuilder line = new StringBuilder(""); //временная переменная, в которую будет записываться строка, из которой будут удалены комментарии
+                for (int i = 0; i < FCTBLeft.LinesCount; i++) //записываем каждую строку в Stringbuilder
+                {
+                    line.Append(Regex.Replace(FCTBLeft.Lines[i].ToString(), @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " "));
+                    line.Append('\n');
+                }
+                //Лексер и парсер языков C и C++, поставляемые в ANTLR4 базово, имеют проблемы с распознаванием препроцессоров, поэтому лучше удалять символы, которые указывают на препроцессинг
+                if (comboBoxLanguage.SelectedValue.ToString().Equals("C") || comboBoxLanguage.SelectedValue.ToString().Equals("C++"))
+                    line.Replace("#", "");
+                string canonizedCode = line.ToString();  //записываем в готовую строку с текстом результат удаления комментариев
+                TokensReview window = new TokensReview(canonizedCode, comboBoxLanguage.Text);
                 window.Show();
             }
             catch (Exception ex)
@@ -291,18 +318,18 @@ namespace MyCode
 
         private void SettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Settings window = new Settings(plagiatPercentSetting,maximumSymbolsSetting);
+            Settings window = new Settings(plagiatPercentSetting, maximumSymbolsSetting);
             if (window.ShowDialog() == DialogResult.OK)
             {
                 List<string> data = window.GetData();
-                Byte.TryParse(data[0],out plagiatPercentSetting);
+                Byte.TryParse(data[0], out plagiatPercentSetting);
                 UInt32.TryParse(data[1], out maximumSymbolsSetting);
                 Properties.Settings.Default.plagiatPercent = plagiatPercentSetting;
                 Properties.Settings.Default.maximumSymbols = maximumSymbolsSetting;
                 Properties.Settings.Default.Save();
             }
         }
-        private List<CodeInfo> FetchDataFromDB(uint length,string language)
+        private List<CodeInfo> FetchDataFromDB(uint length, string language)
         {
             DBWorker worker = new DBWorker();
             return worker.Find(length, language);

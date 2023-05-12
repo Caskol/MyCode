@@ -325,7 +325,7 @@ namespace MyCode
         {
             if (x.Length <= 0 || y.Length <= 0)
                 throw new ArgumentNullException("Одна из строк была пуста");
-            ushort[] row1 = new ushort[x.Length + 1];
+            ushort[] row1 = new ushort[y.Length + 1];
             ushort[] row2 = new ushort[y.Length + 1];
             for (int i=1;i<x.Length+1;i++)
             {

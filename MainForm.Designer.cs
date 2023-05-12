@@ -209,12 +209,13 @@
             // FCTBRight
             // 
             FCTBRight.AutoCompleteBracketsList = (new char[] { '(', ')', '{', '}', '[', ']', '"', '"', '\'', '\'' });
-            FCTBRight.AutoScrollMinSize = new Size(27, 14);
+            FCTBRight.AutoScrollMinSize = new Size(2, 14);
             FCTBRight.BackBrush = null;
             FCTBRight.CharHeight = 14;
             FCTBRight.CharWidth = 8;
             FCTBRight.DisabledColor = Color.FromArgb(100, 180, 180, 180);
             FCTBRight.Dock = DockStyle.Fill;
+            FCTBRight.Font = new Font("Courier New", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             FCTBRight.IsReplaceMode = false;
             FCTBRight.Location = new Point(337, 5);
             FCTBRight.Name = "FCTBRight";
@@ -232,12 +233,13 @@
             // FCTBLeft
             // 
             FCTBLeft.AutoCompleteBracketsList = (new char[] { '(', ')', '{', '}', '[', ']', '"', '"', '\'', '\'' });
-            FCTBLeft.AutoScrollMinSize = new Size(27, 14);
+            FCTBLeft.AutoScrollMinSize = new Size(2, 14);
             FCTBLeft.BackBrush = null;
             FCTBLeft.CharHeight = 14;
             FCTBLeft.CharWidth = 8;
             FCTBLeft.DisabledColor = Color.FromArgb(100, 180, 180, 180);
             FCTBLeft.Dock = DockStyle.Fill;
+            FCTBLeft.Font = new Font("Courier New", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             FCTBLeft.IsReplaceMode = false;
             FCTBLeft.Location = new Point(5, 5);
             FCTBLeft.Name = "FCTBLeft";
@@ -279,6 +281,7 @@
             Controls.Add(PanelWithButtons);
             Controls.Add(StatusStrip);
             Controls.Add(MainMenu);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             MainMenuStrip = MainMenu;
             Name = "MainForm";
             Text = "MyCode";

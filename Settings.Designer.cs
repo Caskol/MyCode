@@ -96,7 +96,7 @@
             // numericUpDownSymbols
             // 
             numericUpDownSymbols.Location = new Point(292, 74);
-            numericUpDownSymbols.Maximum = new decimal(new int[] { 60000, 0, 0, 0 });
+            numericUpDownSymbols.Maximum = new decimal(new int[] { 65000, 0, 0, 0 });
             numericUpDownSymbols.Minimum = new decimal(new int[] { 10000, 0, 0, 0 });
             numericUpDownSymbols.Name = "numericUpDownSymbols";
             numericUpDownSymbols.Size = new Size(120, 23);

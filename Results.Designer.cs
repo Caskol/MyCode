@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Results));
             resultsGridView = new DataGridView();
             ((System.ComponentModel.ISupportInitialize)resultsGridView).BeginInit();
             SuspendLayout();
@@ -51,6 +52,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
             Controls.Add(resultsGridView);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Results";
             Text = "Результаты сравнения";
             ((System.ComponentModel.ISupportInitialize)resultsGridView).EndInit();
