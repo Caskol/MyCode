@@ -49,14 +49,17 @@
             openFileDialog = new OpenFileDialog();
             FCTBRight = new FastColoredTextBoxNS.FastColoredTextBox();
             FCTBLeft = new FastColoredTextBoxNS.FastColoredTextBox();
-            tableLayoutPanel1 = new TableLayoutPanel();
+            splitContainer1 = new SplitContainer();
             MainMenu.SuspendLayout();
             StatusStrip.SuspendLayout();
             PanelWithButtons.SuspendLayout();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)FCTBRight).BeginInit();
             ((System.ComponentModel.ISupportInitialize)FCTBLeft).BeginInit();
-            tableLayoutPanel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
+            splitContainer1.Panel1.SuspendLayout();
+            splitContainer1.Panel2.SuspendLayout();
+            splitContainer1.SuspendLayout();
             SuspendLayout();
             // 
             // MainMenu
@@ -217,12 +220,12 @@
             FCTBRight.Dock = DockStyle.Fill;
             FCTBRight.Font = new Font("Courier New", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             FCTBRight.IsReplaceMode = false;
-            FCTBRight.Location = new Point(337, 5);
+            FCTBRight.Location = new Point(0, 0);
             FCTBRight.Name = "FCTBRight";
             FCTBRight.Paddings = new Padding(0);
             FCTBRight.SelectionColor = Color.FromArgb(60, 0, 0, 255);
             FCTBRight.ServiceColors = (FastColoredTextBoxNS.ServiceColors)resources.GetObject("FCTBRight.ServiceColors");
-            FCTBRight.Size = new Size(325, 394);
+            FCTBRight.Size = new Size(339, 400);
             FCTBRight.TabIndex = 1;
             FCTBRight.Zoom = 100;
             FCTBRight.TextChanged += FCTBRight_TextChanged;
@@ -235,18 +238,19 @@
             FCTBLeft.AutoCompleteBracketsList = (new char[] { '(', ')', '{', '}', '[', ']', '"', '"', '\'', '\'' });
             FCTBLeft.AutoScrollMinSize = new Size(2, 14);
             FCTBLeft.BackBrush = null;
+            FCTBLeft.BorderStyle = BorderStyle.FixedSingle;
             FCTBLeft.CharHeight = 14;
             FCTBLeft.CharWidth = 8;
             FCTBLeft.DisabledColor = Color.FromArgb(100, 180, 180, 180);
             FCTBLeft.Dock = DockStyle.Fill;
             FCTBLeft.Font = new Font("Courier New", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             FCTBLeft.IsReplaceMode = false;
-            FCTBLeft.Location = new Point(5, 5);
+            FCTBLeft.Location = new Point(0, 0);
             FCTBLeft.Name = "FCTBLeft";
             FCTBLeft.Paddings = new Padding(0);
             FCTBLeft.SelectionColor = Color.FromArgb(60, 0, 0, 255);
             FCTBLeft.ServiceColors = (FastColoredTextBoxNS.ServiceColors)resources.GetObject("FCTBLeft.ServiceColors");
-            FCTBLeft.Size = new Size(324, 394);
+            FCTBLeft.Size = new Size(310, 400);
             FCTBLeft.TabIndex = 0;
             FCTBLeft.Zoom = 100;
             FCTBLeft.TextChanged += FCTBLeft_TextChanged;
@@ -254,30 +258,34 @@
             FCTBLeft.DragDrop += DragDrop;
             FCTBLeft.DragEnter += DragEnter;
             // 
-            // tableLayoutPanel1
+            // splitContainer1
             // 
-            tableLayoutPanel1.CellBorderStyle = TableLayoutPanelCellBorderStyle.Outset;
-            tableLayoutPanel1.ColumnCount = 2;
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel1.Controls.Add(FCTBLeft, 0, 0);
-            tableLayoutPanel1.Controls.Add(FCTBRight, 1, 0);
-            tableLayoutPanel1.Dock = DockStyle.Fill;
-            tableLayoutPanel1.GrowStyle = TableLayoutPanelGrowStyle.FixedSize;
-            tableLayoutPanel1.Location = new Point(0, 24);
-            tableLayoutPanel1.Name = "tableLayoutPanel1";
-            tableLayoutPanel1.RowCount = 1;
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel1.Size = new Size(667, 404);
-            tableLayoutPanel1.TabIndex = 4;
+            splitContainer1.BackColor = SystemColors.ActiveBorder;
+            splitContainer1.BorderStyle = BorderStyle.Fixed3D;
+            splitContainer1.Dock = DockStyle.Fill;
+            splitContainer1.Location = new Point(0, 24);
+            splitContainer1.Name = "splitContainer1";
+            // 
+            // splitContainer1.Panel1
+            // 
+            splitContainer1.Panel1.Controls.Add(FCTBLeft);
+            splitContainer1.Panel1MinSize = 100;
+            // 
+            // splitContainer1.Panel2
+            // 
+            splitContainer1.Panel2.Controls.Add(FCTBRight);
+            splitContainer1.Panel2MinSize = 100;
+            splitContainer1.Size = new Size(667, 404);
+            splitContainer1.SplitterDistance = 314;
+            splitContainer1.SplitterWidth = 10;
+            splitContainer1.TabIndex = 4;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(875, 450);
-            Controls.Add(tableLayoutPanel1);
+            Controls.Add(splitContainer1);
             Controls.Add(PanelWithButtons);
             Controls.Add(StatusStrip);
             Controls.Add(MainMenu);
@@ -294,7 +302,10 @@
             groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)FCTBRight).EndInit();
             ((System.ComponentModel.ISupportInitialize)FCTBLeft).EndInit();
-            tableLayoutPanel1.ResumeLayout(false);
+            splitContainer1.Panel1.ResumeLayout(false);
+            splitContainer1.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
+            splitContainer1.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -319,7 +330,7 @@
         private ToolStripMenuItem SettingsToolStripMenuItem;
         private FastColoredTextBoxNS.FastColoredTextBox FCTBRight;
         private FastColoredTextBoxNS.FastColoredTextBox FCTBLeft;
-        private TableLayoutPanel tableLayoutPanel1;
         private Label labelPlagiat;
+        private SplitContainer splitContainer1;
     }
 }

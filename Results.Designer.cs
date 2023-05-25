@@ -43,6 +43,7 @@
             resultsGridView.Name = "resultsGridView";
             resultsGridView.ReadOnly = true;
             resultsGridView.RowTemplate.Height = 25;
+            resultsGridView.ShowCellToolTips = false;
             resultsGridView.Size = new Size(800, 450);
             resultsGridView.TabIndex = 0;
             // 

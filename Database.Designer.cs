@@ -77,6 +77,7 @@
             DataBaseGrid.Name = "DataBaseGrid";
             DataBaseGrid.ReadOnly = true;
             DataBaseGrid.RowTemplate.Height = 25;
+            DataBaseGrid.ShowCellToolTips = false;
             DataBaseGrid.Size = new Size(574, 461);
             DataBaseGrid.TabIndex = 2;
             // 
