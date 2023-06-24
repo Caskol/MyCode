@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
   <Class Name="MyCode.Tokenizer">
-    <Position X="7" Y="5.5" Width="1.5" />
+    <Position X="4.75" Y="8.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>IAAAQAAACAACAAAEAAAAAAYAAAZAAAAAAAAAAAAACAA=</HashCode>
       <FileName>AnalyticCore.cs</FileName>
@@ -15,69 +15,68 @@
     </TypeIdentifier>
   </Class>
   <Class Name="MyCode.Comparator">
-    <Position X="9" Y="5.5" Width="1.5" />
+    <Position X="8.25" Y="5.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAQQQABAAAAIAAAAAAAAAgAAAAAAAAAAFAAQAAAAA=</HashCode>
       <FileName>AnalyticCore.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="MyCode.CodeInfo">
-    <Position X="14.25" Y="5.5" Width="1.5" />
+    <Position X="8.25" Y="12" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAAACAAAACAAAAEAAAAAAAAAAAQAAAAAAAAAAAA=</HashCode>
       <FileName>CodeInfo.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="MyCode.Database">
-    <Position X="14.25" Y="9.75" Width="1.5" />
+    <Position X="10" Y="7.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAEAAAAAACAQAEIAAACQAAACAAAAAIAAAAAYAQAAAAA=</HashCode>
       <FileName>Database.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="MyCode.DBWorker">
-    <Position X="12.5" Y="5.5" Width="1.5" />
+    <Position X="6.5" Y="12.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAQAgAAAAAAAAAAIAAAAAgAAAAAAAAA=</HashCode>
       <FileName>DBWorker.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="MyCode.MainForm">
-    <Position X="4.75" Y="9.75" Width="1.5" />
+    <Position X="2.75" Y="5.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>gAAQARAAACAAMAQgYgCAUQASACCgBQkAAKAEEAYECCQ=</HashCode>
+      <HashCode>gAAQARAAACAAMAQgYgCAUQASACCgBQkAAKAEEAYECAQ=</HashCode>
       <FileName>MainForm.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="MyCode.Program">
-    <Position X="10.75" Y="5.5" Width="1.5" />
+    <Position X="6.5" Y="8.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAA=</HashCode>
       <FileName>Program.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="MyCode.Results">
-    <Position X="7" Y="9.75" Width="1.5" />
+    <Position X="6.5" Y="5.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAIAAAACAAAAAAAACAAAACAAAAAAAAAAAQAAAAAAA=</HashCode>
       <FileName>Results.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="MyCode.Settings">
-    <Position X="12.5" Y="9.75" Width="1.5" />
+    <Position X="8.25" Y="8.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAGIAAAAAAACEAAACAAAAAAARIAAAgAAAAAA=</HashCode>
     </TypeIdentifier>
   </Class>
   <Class Name="MyCode.TokensReview">
-    <Position X="9" Y="9.75" Width="1.5" />
+    <Position X="4.75" Y="12.25" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAEAAAACACAAAAgAAACAAAACAAABAAAAAAAABAEAAAA=</HashCode>
-      <FileName>TokensAndTree.cs</FileName>
+      <HashCode>AAAAAAAAACAAAAAAAACAAAACAAABAAAAAAAAAAAAAAA=</HashCode>
     </TypeIdentifier>
   </Class>
   <Class Name="MyCode.WaitingForm">
-    <Position X="10.75" Y="9.75" Width="1.5" />
+    <Position X="6.5" Y="9.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAQACAAABAEAACAAAACAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>WaitingForm.cs</FileName>

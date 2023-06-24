@@ -294,6 +294,8 @@ namespace MyCode
             var hashedArray2 = new HashSet<string>(array2);
             intersection = hashedArray1.Intersect(hashedArray2).Count(); //получаем значение пересечения двух массивов между собой (т.е. количество элементов, которые присутствуют в обоих массивах)
             union = array1.Union(array2).Count();//получаем значение объединения двух массивов между собой (т.е. общее количество элементов)
+            hashedArray1 = null;
+            hashedArray2 = null;
             return (float)intersection / union;
         }
         /// <summary>
