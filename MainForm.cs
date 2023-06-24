@@ -88,12 +88,13 @@ namespace MyCode
             List<Tokenizer> codeCompare = new List<Tokenizer>(); //создаем список кодов, с которым будет сравниваться основной код (т.е. тот, что введен в левом окне программы)
             bool blockFromAddingInDatabase = false;
 
-            if (FCTBLeft.LinesCount < 1 && FCTBLeft.Lines[0].Length == 0) //
+            //Тест на пробелы в левом окне. Если в левом окне только пробелы, то выдать ошибку, иначе продолжить
+            string testingSpaces = FCTBLeft.Text;
+            if (testingSpaces.Replace(" ", "").Replace("\r\n", "").Replace("\t", "").Count() == 0)
             {
                 MessageBox.Show("Левое окно программы не может быть пустым", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-
 
             //Левое окно
             StringBuilder line = new StringBuilder(""); //временная переменная, в которую будет записываться строка, из которой будут удалены комментарии
@@ -142,31 +143,41 @@ namespace MyCode
             //Правое окно
             bool isEmpty = false; //проверка на пустоту правого окна
             List<string> canonizedComparableCodes = new List<string>();
-            if (FCTBRight.LinesCount > 1 || FCTBRight.Lines[0].Length != 0) //
+            if (FCTBRight.LinesCount >= 1) //
             {
-                string canonizedCodeRight;
-                line = new StringBuilder("");
-                for (int i = 0; i < FCTBRight.LinesCount; i++) //убираем комментарии в цикле построчно
+                testingSpaces = FCTBRight.Text;
+                if (testingSpaces.Replace(" ", "").Replace("\r\n", "").Replace("\t", "").Count() == 0)
                 {
-                    tempLine = Regex.Replace(FCTBRight.Lines[i].ToString(), @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " ");
-                    if (comboBoxLanguage.SelectedValue.ToString().Equals("C") || comboBoxLanguage.SelectedValue.ToString().Equals("C++") || comboBoxLanguage.SelectedValue.ToString().Equals("Python"))
+                    MessageBox.Show("Правое окно не содержит в себе информации. Сравнение будет происходить только на основе элементов из базы данных." +
+                    "Если таких элементов не будет, придется вставить код в правое окно, иначе не с чем сравнивать", "Важное предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    isEmpty = true;
+                }
+                else
+                {
+                    string canonizedCodeRight;
+                    line = new StringBuilder("");
+                    for (int i = 0; i < FCTBRight.LinesCount; i++) //убираем комментарии в цикле построчно
                     {
-                        if (tempLine.IndexOf("#") < 0)
+                        tempLine = Regex.Replace(FCTBRight.Lines[i].ToString(), @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " ");
+                        if (comboBoxLanguage.SelectedValue.ToString().Equals("C") || comboBoxLanguage.SelectedValue.ToString().Equals("C++") || comboBoxLanguage.SelectedValue.ToString().Equals("Python"))
+                        {
+                            if (tempLine.IndexOf("#") < 0)
+                                line.Append(tempLine);
+                            else if (tempLine.IndexOf("#") > 0)
+                                line.Append(tempLine.Substring(0, tempLine.IndexOf("#")));
+                        }
+                        else
                             line.Append(tempLine);
-                        else if (tempLine.IndexOf("#") > 0)
-                            line.Append(tempLine.Substring(0, tempLine.IndexOf("#")));
                     }
-                    else
-                        line.Append(tempLine);
+                    canonizedCodeRight = line.ToString();
+                    if (canonizedCodeRight.Length > maximumSymbolsSetting)
+                    {
+                        MessageBox.Show($"В целях увеличения быстродействия программы нельзя вводить более 25000 символов. Текущее количество - {canonizedCodeRight.Length}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+                    codeCompare.Add(new Tokenizer(comboBoxLanguage.SelectedValue.ToString(), canonizedCodeRight));//добавляем в список кодов информацию из правого окна
+                    canonizedComparableCodes.Add(canonizedCodeRight);
                 }
-                canonizedCodeRight = line.ToString();
-                if (canonizedCodeRight.Length > maximumSymbolsSetting)
-                {
-                    MessageBox.Show($"В целях увеличения быстродействия программы нельзя вводить более 25000 символов. Текущее количество - {canonizedCodeRight.Length}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-                codeCompare.Add(new Tokenizer(comboBoxLanguage.SelectedValue.ToString(), canonizedCodeRight));//добавляем в список кодов информацию из правого окна
-                canonizedComparableCodes.Add(canonizedCodeRight);
             }
             else
             {
@@ -247,9 +258,10 @@ namespace MyCode
 
         private void buttonShowTokens_Click(object sender, EventArgs e)
         {
-            if (FCTBLeft.Text.Length == 0)
+            string testingSpaces = FCTBLeft.Text;
+            if (testingSpaces.Replace(" ", "").Replace("\r\n", "").Replace("\t","").Count() == 0)
             {
-                MessageBox.Show("Левое окно программы не может быть пустым", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Левое окно программы не может быть пустым", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             try
