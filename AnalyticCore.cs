@@ -145,24 +145,6 @@ namespace MyCode
                 return ids;
             }
         }
-        /// <summary>
-        /// Метод, который превращает поток полученных идентификаторов в виде строки для поиска LCS
-        /// </summary>
-        /// <returns>Строка, содержащая последовательность идентификаторов, полученных при токенизации</returns>
-        public string GetIdentificatorsString()
-        {
-            StringBuilder sb = new StringBuilder("");
-            try
-            {
-                foreach (var Token in _tokens)
-                    sb.Append(Token.Item2);
-                return sb.ToString();
-            }
-            catch (ArgumentNullException)
-            {
-                return string.Empty;
-            }
-        }
     }
     public class Shingle
     {
@@ -211,20 +193,6 @@ namespace MyCode
             for (int i = 0; i < _canonizedCodeArrayInString.Length-1; i++)
                 _shingleList.Add(_canonizedCodeArrayInString.Substring(i, 2));
         }
-        public override string ToString()
-        {
-            StringBuilder sb = new StringBuilder("");
-            try
-            {
-                foreach (var Shingle in Shingles)
-                    sb.Append(Shingle);
-                return sb.ToString();
-            }
-            catch (Exception)
-            {
-                return string.Empty;
-            }
-        }
     }
     public class Comparator
     {
@@ -242,7 +210,6 @@ namespace MyCode
         {
             if (array1.Count == 0 || array2.Count == 0)
                 throw new ArgumentNullException("Как минимум один из сравниваемых массивов был пустым");
-            ushort stepCount = 0;
             ushort[] row1 = new ushort[array2.Count+1];//нам не нужно хранить все строки
             ushort[] row2 = new ushort[array2.Count+1];
             for (int i = 1; i < array1.Count+1; i++) //строки
@@ -275,8 +242,8 @@ namespace MyCode
                 }
                 Array.Copy(row2, row1, row1.Length);//копируем второй ряд и вставляем его вместо первого
             }
-            stepCount = row2.Last();
-            return 1 - (float)stepCount / (float)Math.Max(array1.Count, array2.Count);
+            var blabla = row2.Last() / (float)Math.Max(array1.Count, array2.Count);
+            return 1 - row2.Last() / (float)Math.Max(array1.Count, array2.Count);
         }
         /// <summary>
         /// Коэффициент Жаккара для вычисления степени схожести двух массивов. Используется сравнение уникальных элементов
@@ -323,28 +290,43 @@ namespace MyCode
         /// <param name="y"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public float LongestCommonSubsequence(string x, string y)
+        public float LongestCommonSubsequence<T>(List<T> array1, List<T> array2)
         {
-            if (x.Length <= 0 || y.Length <= 0)
-                throw new ArgumentNullException("Одна из строк была пуста");
-            ushort[] row1 = new ushort[y.Length + 1];
-            ushort[] row2 = new ushort[y.Length + 1];
-            for (int i=1;i<x.Length+1;i++)
+            if (array1.Count == 0 || array2.Count == 0)
+                throw new ArgumentNullException("Как минимум один из сравниваемых массивов был пустым");
+            ushort[] row1 = new ushort[array2.Count + 1];
+            ushort[] row2 = new ushort[array2.Count + 1];
+            for (int i=1;i<array1.Count+1;i++)
             {
                 row1[0] = 0;
                 row2[0] = 0;
-                for (int j = 1; j < y.Length + 1; j++) //столбец y
+                for (int j = 1; j < array2.Count + 1; j++) //столбец y
                 {
-                    if (y[j - 1].Equals(x[i - 1])) //если j-й элемент строки совпадает с i-м элементов столбца
-                        row2[j] = (ushort)(row1[j - 1] + 1);//если совпадает, то берем значения из диагональной ячейки и прибавляем 1
+                    if (array1 is List<Tuple<int, string, string>> tokens1 && array2 is List<Tuple<int, string, string>> tokens2) //преобразовываем T в тип Tuple
+                    {
+                        if (!string.Equals(tokens1[i - 1].Item2, tokens2[j - 1].Item2)) //если i-й токен первого массива не совпадает с j-м токеном второго массива
+                            row2[j] = Math.Max(row1[j], row2[j - 1]);// то берем максимальный из значений левого символа или верхнего символа
+                        else
+                            row2[j] = (ushort)(row1[j-1]+1);// если совпадает, то берем значения из диагональной ячейки и прибавляем 1
+                    }
+                    else if (typeof(T) == typeof(string))
+                    {
+                        if (!string.Equals(array1[i - 1], array2[j - 1])) //если i-й шингл первого массива не совпадает с j-м шинглом второго массива
+                            row2[j] = Math.Max(row1[j], row2[j - 1]);//то берем максимальный из значений левого символа или верхнего символа
+                        else
+                            row2[j] = (ushort)(row1[j - 1] + 1);// если совпадает, то берем значения из диагональной ячейки и прибавляем 1
+                    }
                     else
-                        row2[j] = Math.Max(row1[j], row2[j - 1]);//если не совпадает, то берем максимальный из значений левого символа или верхнего символа
+                        throw new ArgumentException("Как минимум один из переданных списков не содержит объектов типа string или Tuple");
+                    //if (y[j - 1].Equals(x[i - 1])) //если j-й элемент строки совпадает с i-м элементов столбца
+                    //    row2[j] = (ushort)(row1[j - 1] + 1);//если совпадает, то берем значения из диагональной ячейки и прибавляем 1
+                    //else
+                    //    row2[j] = Math.Max(row1[j], row2[j - 1]);//если не совпадает, то берем максимальный из значений левого символа или верхнего символа
                 }
                 Array.Copy(row2 , row1, row2.Length);
             }
             //сами подпоследовательности нас не интересуют, т.к. необходимо найти коэффициент схожести, а не само сходство. Это будет количество совпадений, деленное на длину текста максимальной длины
-            int lcsLength = row2.Last(); //берем самый последний элемент
-            return (float)lcsLength / Math.Max(x.Length, y.Length); //и возвращаем его, поделив на длину текста
+            return (float)row2.Last() / Math.Max(array1.Count, array2.Count); //делим значение самого последнего элемента на максимальную длину текста
         }
 
         public List<float> Compare(Tokenizer leftCode, List<string> leftCodeTokenShingles, Shingle leftCodeShingles, Tokenizer rightCode, int order)
@@ -359,7 +341,7 @@ namespace MyCode
                 diceToken = SorensenDiceCoefficient(leftCodeTokenShingles, new Shingle(rightCode, 4).Shingles);
             }
             catch (Exception) { }
-            float lcsToken = LongestCommonSubsequence(leftCode.GetIdentificatorsString(), rightCode.GetIdentificatorsString());
+            float lcsToken = LongestCommonSubsequence(leftCode.TokensArray, rightCode.TokensArray);
             if (jaccardToken == -1 && diceToken == -1)
                 PercentTokens = (levenshteinToken + lcsToken) / 2 * 100;
             else
@@ -384,7 +366,7 @@ namespace MyCode
                 levenshteinShingle = LevenshteinDistance(leftCodeShingles.Shingles, right.Shingles);
                 jaccardShingle = JaccardCoefficient(leftCodeShingles.Shingles, right.Shingles);
                 diceShingle = SorensenDiceCoefficient(leftCodeShingles.Shingles, right.Shingles);
-                lcsShingle = LongestCommonSubsequence(leftCodeShingles.ToString(), right.ToString());
+                lcsShingle = LongestCommonSubsequence(leftCodeShingles.Shingles, right.Shingles);
                 PercentShingles = (levenshteinShingle + jaccardShingle + diceShingle + lcsShingle) / 4 * 100;
             }
             result.Add(levenshteinShingle*100);
