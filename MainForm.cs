@@ -1,4 +1,5 @@
 using FastColoredTextBoxNS;
+using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics.Eventing.Reader;
 using System.Text;
@@ -206,23 +207,23 @@ namespace MyCode
             Comparator cmp = new Comparator();
             List<List<float>> percents = new List<List<float>>(); //список процентов плагиата для каждого канонизированного кода
 
-            //запускаем окно ожидания в отдельном потоке
-            WaitingForm wf = new WaitingForm();
+            SwitchControl(this.Controls.Find("waitingPanel", false)[0]);
+
             Thread thread = new Thread(() =>
             {
-                wf.ShowDialog();
+                Parallel.For(0, codeCompare.Count, i =>
+                {
+                    percents.Add(cmp.Compare(leftCode, leftCodeTokenShingles, leftCodeShingle, codeCompare[i], i));
+                });
             });
-            thread.Start(); //запускаем поток - он будет работать пока не выполнятся операции ниже
-            //Распараллеливаем процесс сравнения для каждого кода
-            Parallel.For(0, codeCompare.Count, i =>
+            thread.Start();
+
+            while (thread.IsAlive)
             {
-                percents.Add(cmp.Compare(leftCode, leftCodeTokenShingles, leftCodeShingle, codeCompare[i], i));
-            });
-            //после выполнения операций окно ожидания надо закрыть
-            wf.Invoke((MethodInvoker)(() =>
-            {
-                wf.Close();
-            }));
+                Application.DoEvents();
+            }
+
+            SwitchControl(this.Controls.Find("waitingPanel", false)[0]);
 
 
             //Вывод результатов
@@ -241,7 +242,7 @@ namespace MyCode
             if (plagiatPercentSetting > maxPercent)
             {
                 labelPlagiat.Text = "Плагиат: Нет";
-                if (blockFromAddingInDatabase==false)
+                if (blockFromAddingInDatabase == false)
                 {
                     DialogResult dr = MessageBox.Show("Вы хотите добавить код, размещенный в левом окне в базу данных?", "Добавление в базу данных", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                     if (dr == DialogResult.Yes)
@@ -262,7 +263,7 @@ namespace MyCode
         private void buttonShowTokens_Click(object sender, EventArgs e)
         {
             string testingSpaces = FCTBLeft.Text;
-            if (testingSpaces.Replace(" ", "").Replace("\r\n", "").Replace("\t","").Count() == 0)
+            if (testingSpaces.Replace(" ", "").Replace("\r\n", "").Replace("\t", "").Count() == 0)
             {
                 MessageBox.Show("Левое окно программы не может быть пустым", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
@@ -348,6 +349,11 @@ namespace MyCode
         {
             DBWorker worker = new DBWorker();
             return worker.Find(length, language);
+        }
+        private void SwitchControl(Control control)
+        {
+            control.Visible = !control.Visible;
+            control.Enabled = !control.Enabled;
         }
     }
 }

@@ -50,6 +50,9 @@
             FCTBRight = new FastColoredTextBoxNS.FastColoredTextBox();
             FCTBLeft = new FastColoredTextBoxNS.FastColoredTextBox();
             splitContainer1 = new SplitContainer();
+            waitingPanel = new Panel();
+            progressBar1 = new ProgressBar();
+            waitingLabel = new Label();
             MainMenu.SuspendLayout();
             StatusStrip.SuspendLayout();
             PanelWithButtons.SuspendLayout();
@@ -60,6 +63,7 @@
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
             splitContainer1.SuspendLayout();
+            waitingPanel.SuspendLayout();
             SuspendLayout();
             // 
             // MainMenu
@@ -280,11 +284,43 @@
             splitContainer1.SplitterWidth = 10;
             splitContainer1.TabIndex = 4;
             // 
+            // waitingPanel
+            // 
+            waitingPanel.BackColor = Color.Transparent;
+            waitingPanel.Controls.Add(progressBar1);
+            waitingPanel.Controls.Add(waitingLabel);
+            waitingPanel.Dock = DockStyle.Fill;
+            waitingPanel.Enabled = false;
+            waitingPanel.Location = new Point(0, 24);
+            waitingPanel.Name = "waitingPanel";
+            waitingPanel.Size = new Size(667, 404);
+            waitingPanel.TabIndex = 5;
+            waitingPanel.Visible = false;
+            // 
+            // progressBar1
+            // 
+            progressBar1.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            progressBar1.Location = new Point(181, 201);
+            progressBar1.Name = "progressBar1";
+            progressBar1.Size = new Size(309, 23);
+            progressBar1.Style = ProgressBarStyle.Marquee;
+            progressBar1.TabIndex = 4;
+            // 
+            // waitingLabel
+            // 
+            waitingLabel.AutoSize = true;
+            waitingLabel.Location = new Point(181, 183);
+            waitingLabel.Name = "waitingLabel";
+            waitingLabel.Size = new Size(309, 15);
+            waitingLabel.TabIndex = 3;
+            waitingLabel.Text = "Сравнивать код это очень сложно и долго. Подождите";
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(875, 450);
+            Controls.Add(waitingPanel);
             Controls.Add(splitContainer1);
             Controls.Add(PanelWithButtons);
             Controls.Add(StatusStrip);
@@ -306,6 +342,8 @@
             splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
             splitContainer1.ResumeLayout(false);
+            waitingPanel.ResumeLayout(false);
+            waitingPanel.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -332,5 +370,8 @@
         private FastColoredTextBoxNS.FastColoredTextBox FCTBLeft;
         private Label labelPlagiat;
         private SplitContainer splitContainer1;
+        private Panel waitingPanel;
+        private Label waitingLabel;
+        private ProgressBar progressBar1;
     }
 }
