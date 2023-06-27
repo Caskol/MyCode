@@ -337,8 +337,8 @@ namespace MyCode
             float jaccardToken = -1, diceToken = -1;
             try
             {
-                jaccardToken = JaccardCoefficient(leftCodeTokenShingles, new Shingle(rightCode, 4).Shingles); //создаем k-граммы из идентификатор, причем k=4
-                diceToken = SorensenDiceCoefficient(leftCodeTokenShingles, new Shingle(rightCode, 4).Shingles);
+                jaccardToken = JaccardCoefficient(leftCodeTokenShingles, new Shingle(rightCode, 2).Shingles); //создаем k-граммы из идентификатор, причем k=4
+                diceToken = SorensenDiceCoefficient(leftCodeTokenShingles, new Shingle(rightCode, 2).Shingles);
             }
             catch (Exception) { }
             float lcsToken = LongestCommonSubsequence(leftCode.TokensArray, rightCode.TokensArray);

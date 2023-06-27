@@ -122,7 +122,7 @@ namespace MyCode
             leftCode = new Tokenizer(comboBoxLanguage.SelectedValue.ToString(), canonizedCode);
             try
             {
-                leftCodeTokenShingles = new Shingle(leftCode, 4).Shingles;
+                leftCodeTokenShingles = new Shingle(leftCode, 2).Shingles;
             }
             catch (ArgumentException ex)
             {
