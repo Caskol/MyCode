@@ -122,7 +122,7 @@ namespace MyCode
             leftCode = new Tokenizer(comboBoxLanguage.SelectedValue.ToString(), canonizedCode);
             try
             {
-                leftCodeTokenShingles = new Shingle(leftCode, 2).Shingles;
+                leftCodeTokenShingles = new Shingle(leftCode, 3).Shingles;
             }
             catch (ArgumentException ex)
             {
@@ -241,12 +241,15 @@ namespace MyCode
             if (plagiatPercentSetting > maxPercent)
             {
                 labelPlagiat.Text = "Плагиат: Нет";
-                DialogResult dr = MessageBox.Show("Вы хотите добавить код, размещенный в левом окне в базу данных?", "Добавление в базу данных", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                if (dr == DialogResult.Yes)
+                if (blockFromAddingInDatabase==false)
                 {
-                    DBWorker worker = new DBWorker();
-                    CodeInfo ci = new CodeInfo(canonizedCode, symbolsCount, comboBoxLanguage.SelectedValue.ToString(), DateTime.Now);
-                    worker.InsertIntoDB(ci);
+                    DialogResult dr = MessageBox.Show("Вы хотите добавить код, размещенный в левом окне в базу данных?", "Добавление в базу данных", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    if (dr == DialogResult.Yes)
+                    {
+                        DBWorker worker = new DBWorker();
+                        CodeInfo ci = new CodeInfo(canonizedCode, symbolsCount, comboBoxLanguage.SelectedValue.ToString(), DateTime.Now);
+                        worker.InsertIntoDB(ci);
+                    }
                 }
             }
             else

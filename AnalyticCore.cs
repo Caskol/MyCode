@@ -216,33 +216,30 @@ namespace MyCode
             {
                 row1[0] = (ushort)(i - 1);
                 row2[0] = (ushort)i;
+                if (i - 1 == 0) //если это первая итерация, то первую строку нужно заполнить порядковыми номерами
+                    for (int j=1;j<array2.Count+1;j++)
+                        row1[j]=(ushort)j;
                 for (int j = 1; j<array2.Count + 1;j++)
                 {
-                    if (i - 1 == 0) //если это первая итерация основного цикла
-                        row1[j] = (ushort)j;
-                    else
+                    if (array1 is List<Tuple<int, string, string>> tokens1 && array2 is List<Tuple<int, string, string>> tokens2) //преобразовываем T в тип Tuple
                     {
-                        if (array1 is List<Tuple<int, string, string>> tokens1 && array2 is List<Tuple<int, string, string>> tokens2) //преобразовываем T в тип Tuple
-                        {
-                            if (!string.Equals(tokens1[i - 1].Item2, tokens2[j - 1].Item2)) //если i-й токен первого массива не совпадает с j-м токеном второго массива
-                                row2[j]=(ushort)Math.Min(Math.Min(row1[j] + 1, row2[j - 1] + 1), row1[j - 1] + 1);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0)+1)
-                             else
-                                row2[j] = (ushort)Math.Min(Math.Min(row1[j] + 1, row2[j - 1] + 1), row1[j - 1]);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0))
-                        }
-                        else if (typeof(T) == typeof(string))
-                        {
-                            if (!string.Equals(array1[i - 1], array2[j - 1])) //если i-й шингл первого массива не совпадает с j-м шинглом второго массива
-                                row2[j] = (ushort)Math.Min(Math.Min(row1[j] + 1, row2[j - 1] + 1), row1[j - 1] + 1);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0)+1)
-                            else
-                                row2[j] = (ushort)Math.Min(Math.Min(row1[j] + 1, row2[j - 1] + 1), row1[j - 1]);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0))
-                        }
+                        if (!string.Equals(tokens1[i - 1].Item2, tokens2[j - 1].Item2)) //если i-й токен первого массива не совпадает с j-м токеном второго массива
+                            row2[j] = (ushort)Math.Min(Math.Min(row1[j] + 1, row2[j - 1] + 1), row1[j - 1] + 1);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0)+1)
                         else
-                            throw new ArgumentException("Как минимум один из переданных списков не содержит объектов типа string или Tuple");
+                            row2[j] = (ushort)Math.Min(Math.Min(row1[j] + 1, row2[j - 1] + 1), row1[j - 1]);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0))
                     }
+                    else if (typeof(T) == typeof(string))
+                    {
+                        if (!string.Equals(array1[i - 1], array2[j - 1])) //если i-й шингл первого массива не совпадает с j-м шинглом второго массива
+                            row2[j] = (ushort)Math.Min(Math.Min(row1[j] + 1, row2[j - 1] + 1), row1[j - 1] + 1);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0)+1)
+                        else
+                            row2[j] = (ushort)Math.Min(Math.Min(row1[j] + 1, row2[j - 1] + 1), row1[j - 1]);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0))
+                    }
+                    else
+                        throw new ArgumentException("Как минимум один из переданных списков не содержит объектов типа string или Tuple");
                 }
                 Array.Copy(row2, row1, row1.Length);//копируем второй ряд и вставляем его вместо первого
             }
-            var blabla = row2.Last() / (float)Math.Max(array1.Count, array2.Count);
             return 1 - row2.Last() / (float)Math.Max(array1.Count, array2.Count);
         }
         /// <summary>
@@ -337,8 +334,8 @@ namespace MyCode
             float jaccardToken = -1, diceToken = -1;
             try
             {
-                jaccardToken = JaccardCoefficient(leftCodeTokenShingles, new Shingle(rightCode, 2).Shingles); //создаем k-граммы из идентификатор, причем k=4
-                diceToken = SorensenDiceCoefficient(leftCodeTokenShingles, new Shingle(rightCode, 2).Shingles);
+                jaccardToken = JaccardCoefficient(leftCodeTokenShingles, new Shingle(rightCode, 3).Shingles); //создаем k-граммы из идентификатор, причем k=4
+                diceToken = SorensenDiceCoefficient(leftCodeTokenShingles, new Shingle(rightCode, 3).Shingles);
             }
             catch (Exception) { }
             float lcsToken = LongestCommonSubsequence(leftCode.TokensArray, rightCode.TokensArray);
