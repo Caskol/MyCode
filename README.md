@@ -1,4 +1,4 @@
 # MyCode
-Simple source code plagiarism checker written with ANTLR4 and LiteDB NoSQL database. Was written as a bachelor's graduate work.
+Simple source code plagiarism checker written on C# with ANTLR4 and LiteDB NoSQL database. Was written as a bachelor's graduate work.
 
-There is no plans to continue support this product.
+Supports C, C#, C++, Python 3, Java and Pascal languages. Contains local database for saving non-plagiarized source code.
