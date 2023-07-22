@@ -35,6 +35,7 @@
             OpenFileToolStripMenuItem = new ToolStripMenuItem();
             DBViewToolStripMenuItem = new ToolStripMenuItem();
             SettingsToolStripMenuItem = new ToolStripMenuItem();
+            aboutToolStripMenuItem = new ToolStripMenuItem();
             StatusStrip = new StatusStrip();
             StatusStripLabel = new ToolStripStatusLabel();
             PanelWithButtons = new Panel();
@@ -68,7 +69,7 @@
             // 
             // MainMenu
             // 
-            MainMenu.Items.AddRange(new ToolStripItem[] { FileToolStripMenuItem, DBViewToolStripMenuItem, SettingsToolStripMenuItem });
+            MainMenu.Items.AddRange(new ToolStripItem[] { FileToolStripMenuItem, DBViewToolStripMenuItem, SettingsToolStripMenuItem, aboutToolStripMenuItem });
             MainMenu.Location = new Point(0, 0);
             MainMenu.Name = "MainMenu";
             MainMenu.Size = new Size(875, 24);
@@ -101,6 +102,13 @@
             SettingsToolStripMenuItem.Size = new Size(83, 20);
             SettingsToolStripMenuItem.Text = "Параметры";
             SettingsToolStripMenuItem.Click += SettingsToolStripMenuItem_Click;
+            // 
+            // aboutToolStripMenuItem
+            // 
+            aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
+            aboutToolStripMenuItem.Size = new Size(94, 20);
+            aboutToolStripMenuItem.Text = "О программе";
+            aboutToolStripMenuItem.Click += aboutToolStripMenuItem_Click;
             // 
             // StatusStrip
             // 
@@ -215,7 +223,7 @@
             // 
             // FCTBRight
             // 
-            FCTBRight.AutoCompleteBracketsList = (new char[] { '(', ')', '{', '}', '[', ']', '"', '"', '\'', '\'' });
+            FCTBRight.AutoCompleteBracketsList = new char[] { '(', ')', '{', '}', '[', ']', '"', '"', '\'', '\'' };
             FCTBRight.AutoScrollMinSize = new Size(2, 14);
             FCTBRight.BackBrush = null;
             FCTBRight.CharHeight = 14;
@@ -239,7 +247,7 @@
             // 
             // FCTBLeft
             // 
-            FCTBLeft.AutoCompleteBracketsList = (new char[] { '(', ')', '{', '}', '[', ']', '"', '"', '\'', '\'' });
+            FCTBLeft.AutoCompleteBracketsList = new char[] { '(', ')', '{', '}', '[', ']', '"', '"', '\'', '\'' };
             FCTBLeft.AutoScrollMinSize = new Size(2, 14);
             FCTBLeft.BackBrush = null;
             FCTBLeft.BorderStyle = BorderStyle.FixedSingle;
@@ -327,6 +335,7 @@
             Controls.Add(MainMenu);
             Icon = (Icon)resources.GetObject("$this.Icon");
             MainMenuStrip = MainMenu;
+            MinimumSize = new Size(600, 450);
             Name = "MainForm";
             Text = "MyCode";
             MainMenu.ResumeLayout(false);
@@ -373,5 +382,6 @@
         private Panel waitingPanel;
         private Label waitingLabel;
         private ProgressBar progressBar1;
+        private ToolStripMenuItem aboutToolStripMenuItem;
     }
 }

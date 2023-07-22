@@ -355,5 +355,11 @@ namespace MyCode
             control.Visible = !control.Visible;
             control.Enabled = !control.Enabled;
         }
+
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            About window = new About(this);
+            window.ShowDialog();
+        }
     }
 }
