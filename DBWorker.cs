@@ -19,7 +19,6 @@ namespace MyCode
 
                 //индексируем
                 collection.EnsureIndex(x => x.Id);
-                //collection.EnsureIndex(x => x.CanonizedCode,true);
                 collection.EnsureIndex(x => x.SymbolsCount);
                 collection.EnsureIndex(x => x.Language);
                 collection.EnsureIndex(x => x.DateTime);
@@ -69,8 +68,8 @@ namespace MyCode
                 {
                     allFindings.Add(code);
                 }
-                return allFindings;
             }
+            return allFindings;
         }
     }
 }

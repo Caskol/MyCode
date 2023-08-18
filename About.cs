@@ -35,7 +35,7 @@ namespace MyCode
 
         private void buttonClose_Click(object sender, EventArgs e)
         {
-            this.Close();
+            Close();
         }
 
         private async void pictureBoxLogo_Click(object sender, EventArgs e)

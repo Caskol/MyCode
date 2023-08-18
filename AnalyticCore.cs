@@ -14,29 +14,31 @@ namespace MyCode
         public char[] excludedChars = new char[] { '(', ' ', ')', '{', '}', '"', ';', ',', ':', '[', ']', '\r', '\n', '.' }; //исключаем из списка токенов ненужные символы (мусор при сравнении
         private string _language;
         private Lexer _lexer;
-        //private ParserRuleContext _tree;
         private CommonTokenStream _cts;
-        //private CharStreams _inputStream = null;
         /// <summary>
         /// int - номер строки, string - название токена, string - содержимое токена
         /// </summary>
-        private List<Tuple<int, string, string>> _tokens = new List<Tuple<int, string, string>>();
+        private List<Tuple<int, string, string>> _tokens;
         public string Language
         {
             get { return _language; }
+            set { _language = value; }
         }
         public Lexer Lexer
         {
             get { return _lexer; }
+            private set { _lexer = value; }
         }
         public CommonTokenStream CTS
         {
             get { return _cts; }
+            private set { _cts = value; }
         }
 
         public List<Tuple<int, string, string>> TokensArray
         {
             get { return _tokens; }
+            private set { _tokens = value; }
         }
         
         /// <summary>
@@ -50,50 +52,50 @@ namespace MyCode
             {
                 throw new ArgumentException("Строка с текстом была пуста");
             }
+            TokensArray = new List<Tuple<int, string, string>>();
             var _inputStream = CharStreams.fromString(inputText);
-            //_inputStream = new AntlrInputStream(inputText); //преобразовываем текст в особый формат для ANTLR
             switch (language)
             {
                 case "C":
                     {
-                        _lexer = new CLexer(_inputStream); //создаем лексер на основе введенного текста
-                        _cts = new CommonTokenStream(_lexer); //создаем поток токенов, полученных в результате работы лексера
-                        _cts.Fill(); //заполняем его
+                        Lexer = new CLexer(_inputStream); //создаем лексер на основе введенного текста
+                        CTS = new CommonTokenStream(_lexer); //создаем поток токенов, полученных в результате работы лексера
+                        CTS.Fill(); //заполняем его
                         break;
                     }
                 case "C++":
                     {
-                        _lexer = new CPP14Lexer(_inputStream);
-                        _cts = new CommonTokenStream(_lexer);
-                        _cts.Fill();
+                        Lexer = new CPP14Lexer(_inputStream);
+                        CTS = new CommonTokenStream(_lexer);
+                        CTS.Fill();
                         break;
                     }
                 case "Pascal":
                     {
-                        _lexer = new pascalLexer(_inputStream);
-                        _cts = new CommonTokenStream(_lexer);
-                        _cts.Fill();
+                        Lexer = new pascalLexer(_inputStream);
+                        CTS = new CommonTokenStream(_lexer);
+                        CTS.Fill();
                         break;
                     }
                 case "Python":
                     {
-                        _lexer = new Python3Lexer(_inputStream);
-                        _cts = new CommonTokenStream(_lexer);
-                        _cts.Fill();
+                        Lexer = new Python3Lexer(_inputStream);
+                        CTS = new CommonTokenStream(_lexer);
+                        CTS.Fill();
                         break;
                     }
                 case "Java":
                     {
-                        _lexer = new Java9Lexer(_inputStream);
-                        _cts = new CommonTokenStream(_lexer);
-                        _cts.Fill();
+                        Lexer = new Java9Lexer(_inputStream);
+                        CTS = new CommonTokenStream(_lexer);
+                        CTS.Fill();
                         break;
                     }
                 case "C#":
                     {
-                        _lexer = new CSharpLexer(_inputStream);
-                        _cts = new CommonTokenStream(_lexer);
-                        _cts.Fill();
+                        Lexer = new CSharpLexer(_inputStream);
+                        CTS = new CommonTokenStream(_lexer);
+                        CTS.Fill();
                         break;
                     }
                 default:
@@ -101,12 +103,12 @@ namespace MyCode
                         throw new ArgumentException("Программа не поддерживает такой язык программирования");
                     }
             }
-            _language = language;
-            if (_lexer != null && _cts != null)//если получилось создать лексер и поток токенов, то можно записать токены в список
+            Language = language;
+            if (Lexer != null && CTS != null)//если получилось создать лексер и поток токенов, то можно записать токены в список
             {
-                foreach (var Token in _cts.GetTokens())
+                foreach (var Token in CTS.GetTokens())
                     if (Token.Text.IndexOfAny(excludedChars) == -1 && Token.Text!="<EOF>") //если токен не содержит исключаемых символов, описанных в excludedChars
-                        _tokens.Add(new Tuple<int, string, string>(Token.Line, _lexer.Vocabulary.GetSymbolicName(Token.Type), Token.Text));
+                        TokensArray.Add(new Tuple<int, string, string>(Token.Line, Lexer.Vocabulary.GetSymbolicName(Token.Type), Token.Text));
             }
         }
         /// <summary>
@@ -118,13 +120,13 @@ namespace MyCode
             try
             {
                 StringBuilder sb = new StringBuilder("");
-                foreach (var Token in _tokens)
+                foreach (var Token in TokensArray)
                     sb.Append(Token.Item3);
                 return sb.ToString();
             }
             catch (ArgumentNullException)
             {
-                return "Cannot convert Tokenizer into string without tokens array";
+                return "Cannot convert empty Tokenizer into string";
             }
         }
         /// <summary>
@@ -136,7 +138,7 @@ namespace MyCode
             List<string> ids = new List<string>();
             try
             {
-                foreach (var Token in _tokens)
+                foreach (var Token in TokensArray)
                     ids.Add(Token.Item2);
                 return ids;
             }
@@ -149,10 +151,11 @@ namespace MyCode
     public class Shingle
     {
         private string _canonizedCodeArrayInString;
-        private List<string> _shingleList = new List<string>();
+        private List<string> _shingleList;
         public List<string> Shingles
         {
             get { return _shingleList; }
+            private set { _shingleList = value; }
         }
         /// <summary>
         /// Конструктор класса, который принимает список идентификаторов из токенизатора а затем составляет из них список шинглов длиной n (по умолчанию n=4)
@@ -167,6 +170,7 @@ namespace MyCode
             }
             else
             {
+                Shingles = new List<string>();
                 StringBuilder sb = new StringBuilder("");
                 List<string> ids = tokenizer.GetIdentificatorsList(); //записываем в список все идентификаторы из токенизатора
                 if (ids.Count < n)
@@ -176,7 +180,7 @@ namespace MyCode
                     sb.Clear();
                     for (int j=i;j<i+n;j++)
                         sb.Append(ids[j]);
-                    _shingleList.Add(sb.ToString());
+                    Shingles.Add(sb.ToString());
                 }
             }    
         }
@@ -187,19 +191,27 @@ namespace MyCode
         /// <exception cref="ArgumentException"></exception>
         public Shingle (string input)
         {
+            Shingles = new List<string>();
             if (input.Length < 2)
                 throw new ArgumentException("Сравнение текстов при помощи метода шинглов недоступно, т.к. один из текстов содержит менее двух символов (требуется 2 и более)");
             _canonizedCodeArrayInString= input;
             for (int i = 0; i < _canonizedCodeArrayInString.Length-1; i++)
-                _shingleList.Add(_canonizedCodeArrayInString.Substring(i, 2));
+                Shingles.Add(_canonizedCodeArrayInString.Substring(i, 2));
         }
     }
     public class Comparator
     {
         private float percentageTokens = 0;
         private float percentageShingles = 0;
-        public float PercentTokens { get { return percentageTokens; } set { percentageTokens = value; } }
-        public float PercentShingles { get { return percentageShingles; } set { percentageShingles = value; } }
+        public float PercentTokens 
+        {
+            get { return percentageTokens; } 
+            set { percentageTokens = value; } 
+        }
+        public float PercentShingles 
+        {   get { return percentageShingles; } 
+            set { percentageShingles = value; } 
+        }
         /// <summary>
         /// Алгоритм Вагнера-Фишера (расстояние Левенштейна). Количество операций вставок, удаления, которые необходимо сделать из одного текста чтобы получить другой
         /// </summary>
@@ -258,8 +270,6 @@ namespace MyCode
             var hashedArray2 = new HashSet<string>(array2);
             intersection = hashedArray1.Intersect(hashedArray2).Count(); //получаем значение пересечения двух массивов между собой (т.е. количество элементов, которые присутствуют в обоих массивах)
             union = array1.Union(array2).Count();//получаем значение объединения двух массивов между собой (т.е. общее количество элементов)
-            hashedArray1 = null;
-            hashedArray2 = null;
             return (float)intersection / union;
         }
         /// <summary>
@@ -276,8 +286,6 @@ namespace MyCode
             var hashedGramms2 = new HashSet<string>(gramms2);
             var intersection = hashedGramms1.Intersect(hashedGramms2).Count();
             var total = hashedGramms1.Count + hashedGramms2.Count;
-            hashedGramms1 = null;
-            hashedGramms2 = null;
             return (float)(2 * intersection) / total;
         }
         /// <summary>
@@ -315,10 +323,6 @@ namespace MyCode
                     }
                     else
                         throw new ArgumentException("Как минимум один из переданных списков не содержит объектов типа string или Tuple");
-                    //if (y[j - 1].Equals(x[i - 1])) //если j-й элемент строки совпадает с i-м элементов столбца
-                    //    row2[j] = (ushort)(row1[j - 1] + 1);//если совпадает, то берем значения из диагональной ячейки и прибавляем 1
-                    //else
-                    //    row2[j] = Math.Max(row1[j], row2[j - 1]);//если не совпадает, то берем максимальный из значений левого символа или верхнего символа
                 }
                 Array.Copy(row2 , row1, row2.Length);
             }
@@ -334,7 +338,7 @@ namespace MyCode
             float jaccardToken = -1, diceToken = -1;
             try
             {
-                jaccardToken = JaccardCoefficient(leftCodeTokenShingles, new Shingle(rightCode, 3).Shingles); //создаем k-граммы из идентификатор, причем k=4
+                jaccardToken = JaccardCoefficient(leftCodeTokenShingles, new Shingle(rightCode, 3).Shingles); //создаем k-граммы из идентификатор, причем k=3
                 diceToken = SorensenDiceCoefficient(leftCodeTokenShingles, new Shingle(rightCode, 3).Shingles);
             }
             catch (Exception) { }

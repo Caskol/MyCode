@@ -86,7 +86,7 @@ namespace MyCode
             List<string> leftCodeTokenShingles = null; //список шинглов на основе токенов (в одном шингле содержится 4 токена для уменьшения количества совпадающих шинглов)
             uint symbolsCount; //количество символов в канонизированном тексте для потенциальной записи в базу данных
             string canonizedCode; //строка с канонизированным кодом
-            List<Tokenizer> codeCompare = new List<Tokenizer>(); //создаем список кодов, с которым будет сравниваться основной код (т.е. тот, что введен в левом окне программы)
+            List<Tokenizer> codeCompare; //создаем список кодов, с которым будет сравниваться основной код (т.е. тот, что введен в левом окне программы)
             bool blockFromAddingInDatabase = false;
 
             //Тест на пробелы в левом окне. Если в левом окне только пробелы, то выдать ошибку, иначе продолжить
@@ -97,24 +97,10 @@ namespace MyCode
                 return;
             }
 
-            //Левое окно
-            StringBuilder line = new StringBuilder(""); //временная переменная, в которую будет записываться строка, из которой будут удалены комментарии
-            string tempLine;
-            for (int i = 0; i < FCTBLeft.LinesCount; i++) //записываем каждую строку в Stringbuilder
-            {
-                tempLine = Regex.Replace(FCTBLeft.Lines[i].ToString(), @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " ");
-                if (comboBoxLanguage.SelectedValue.ToString().Equals("C") || comboBoxLanguage.SelectedValue.ToString().Equals("C++") || comboBoxLanguage.SelectedValue.ToString().Equals("Python"))
-                {
-                    if (tempLine.IndexOf("#") < 0)
-                        line.Append(tempLine);
-                    else if (tempLine.IndexOf("#") > 0)
-                        line.Append(tempLine.Substring(0, tempLine.IndexOf("#")));
-                }
-                else
-                    line.Append(tempLine);
-            }
-            canonizedCode = line.ToString();  //записываем в готовую строку с текстом результат удаления комментариев
+            canonizedCode = Canonize(FCTBLeft, comboBoxLanguage.SelectedValue.ToString()); //записываем в готовую строку с текстом результат удаления комментариев
             symbolsCount = (uint)canonizedCode.Length;
+
+
             if (symbolsCount > maximumSymbolsSetting)
             {
                 MessageBox.Show($"Текущие настройки программы не позволяют ввести {symbolsCount} символов в оба окна. Нельзя вводить более {maximumSymbolsSetting} символов в каждое окно.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -143,8 +129,9 @@ namespace MyCode
 
             //Правое окно
             bool isEmpty = false; //проверка на пустоту правого окна
+            codeCompare = new List<Tokenizer>();
             List<string> canonizedComparableCodes = new List<string>();
-            if (FCTBRight.LinesCount >= 1) //
+            if (FCTBRight.LinesCount >= 1) 
             {
                 testingSpaces = FCTBRight.Text;
                 if (testingSpaces.Replace(" ", "").Replace("\r\n", "").Replace("\t", "").Count() == 0)
@@ -155,29 +142,14 @@ namespace MyCode
                 }
                 else
                 {
-                    string canonizedCodeRight;
-                    line = new StringBuilder("");
-                    for (int i = 0; i < FCTBRight.LinesCount; i++) //убираем комментарии в цикле построчно
+                    canonizedCode = Canonize(FCTBRight, comboBoxLanguage.SelectedValue.ToString());
+                    if (canonizedCode.Length > maximumSymbolsSetting)
                     {
-                        tempLine = Regex.Replace(FCTBRight.Lines[i].ToString(), @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " ");
-                        if (comboBoxLanguage.SelectedValue.ToString().Equals("C") || comboBoxLanguage.SelectedValue.ToString().Equals("C++") || comboBoxLanguage.SelectedValue.ToString().Equals("Python"))
-                        {
-                            if (tempLine.IndexOf("#") < 0)
-                                line.Append(tempLine);
-                            else if (tempLine.IndexOf("#") > 0)
-                                line.Append(tempLine.Substring(0, tempLine.IndexOf("#")));
-                        }
-                        else
-                            line.Append(tempLine);
-                    }
-                    canonizedCodeRight = line.ToString();
-                    if (canonizedCodeRight.Length > maximumSymbolsSetting)
-                    {
-                        MessageBox.Show($"В целях увеличения быстродействия программы нельзя вводить более 25000 символов. Текущее количество - {canonizedCodeRight.Length}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show($"В целях увеличения быстродействия программы нельзя вводить более {maximumSymbolsSetting} символов. Текущее количество - {canonizedCode.Length}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
-                    codeCompare.Add(new Tokenizer(comboBoxLanguage.SelectedValue.ToString(), canonizedCodeRight));//добавляем в список кодов информацию из правого окна
-                    canonizedComparableCodes.Add(canonizedCodeRight);
+                    codeCompare.Add(new Tokenizer(comboBoxLanguage.SelectedValue.ToString(), canonizedCode));//добавляем в список кодов информацию из правого окна
+                    canonizedComparableCodes.Add(canonizedCode);
                 }
             }
             else
@@ -229,14 +201,8 @@ namespace MyCode
             //Вывод результатов
             Results results = new Results(canonizedComparableCodes, percents);
             results.Show();
-            float maxPercent = 0;
-            foreach (var item in percents) //цикл для поиска наибольшего процента плагиата среди токенов
-            {
-                if (item[5] > maxPercent)
-                    maxPercent = item[5];
-            }
 
-
+            float maxPercent = percents.Max(item => item[5]); //Использование лямбда-выражения для поиска максимального процента
             labelPlagiatPercent.Text = "Текущее значение схожести: " + maxPercent + "%";
 
             if (plagiatPercentSetting > maxPercent)
@@ -270,16 +236,7 @@ namespace MyCode
             }
             try
             {
-                StringBuilder line = new StringBuilder(""); //временная переменная, в которую будет записываться строка, из которой будут удалены комментарии
-                for (int i = 0; i < FCTBLeft.LinesCount; i++) //записываем каждую строку в Stringbuilder
-                {
-                    line.Append(Regex.Replace(FCTBLeft.Lines[i].ToString(), @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " "));
-                    line.Append('\n');
-                }
-                //Лексер и парсер языков C и C++, поставляемые в ANTLR4 базово, имеют проблемы с распознаванием препроцессоров, поэтому лучше удалять символы, которые указывают на препроцессинг
-                if (comboBoxLanguage.SelectedValue.ToString().Equals("C") || comboBoxLanguage.SelectedValue.ToString().Equals("C++"))
-                    line.Replace("#", "");
-                string canonizedCode = line.ToString();  //записываем в готовую строку с текстом результат удаления комментариев
+                string canonizedCode = Canonize(FCTBLeft, comboBoxLanguage.SelectedValue.ToString());
                 TokensReview window = new TokensReview(canonizedCode, comboBoxLanguage.Text);
                 window.Show();
             }
@@ -293,6 +250,32 @@ namespace MyCode
         {
             Database window = new Database();
             window.Show();
+        }
+        /// <summary>
+        /// Метод для канонизации текста (удаление комментариев и излишних символов)
+        /// </summary>
+        /// <param name="fctb">Окно с текстом, которое нужно канонизировать</param>
+        /// <param name="language">Язык программирования</param>
+        /// <returns></returns>
+        private string Canonize(FastColoredTextBox fctb,string language)
+        {
+            StringBuilder line = new StringBuilder(""); //временная переменная, в которую будет записываться строка, из которой будут удалены комментарии
+            string tempLine;
+            for (int i = 0; i < fctb.LinesCount; i++) //записываем каждую строку в Stringbuilder
+            {
+                tempLine = Regex.Replace(FCTBLeft.Lines[i].ToString(), @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " ");
+                if (language.Equals("C") || language.Equals("C++") || language.Equals("Python"))
+                {
+                    if (tempLine.IndexOf("#") < 0)
+                        line.Append(tempLine);
+                    else if (tempLine.IndexOf("#") > 0)
+                        line.Append(tempLine.Substring(0, tempLine.IndexOf("#")));
+                }
+                else
+                    line.Append(tempLine);
+                line.Append(Environment.NewLine);
+            }
+            return line.ToString();
         }
 
         private void DragEnter(object sender, DragEventArgs e)
