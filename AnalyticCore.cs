@@ -22,8 +22,8 @@ namespace MyCode
     {
         private char[] excludedChars = new char[] { '(', ' ', ')', '{', '}', '"', ';', ',', ':', '[', ']', '\r', '\n', '.' }; //исключаем из списка токенов ненужные символы (мусор при сравнении
         public ProgrammingLanguages Language { get; private set; }
-        public Lexer? Lexer { get; private set; }
-        public CommonTokenStream? CTS { get; private set; }
+        public Lexer Lexer { get; private set; }
+        public CommonTokenStream CTS { get; private set; }
         /// <summary>
         /// int - номер строки, string - название токена, string - содержимое токена
         /// </summary>
@@ -138,7 +138,6 @@ namespace MyCode
     }
     public class Shingle
     {
-        private string _canonizedCodeArrayInString;
         public List<string> Shingles { get; private set; }
         /// <summary>
         /// Конструктор класса, который принимает список идентификаторов из токенизатора а затем составляет из них список шинглов длиной n (по умолчанию n=4)
@@ -177,15 +176,14 @@ namespace MyCode
             Shingles = new List<string>();
             if (input.Length < 2)
                 throw new ArgumentException("Сравнение текстов при помощи метода шинглов недоступно, т.к. один из текстов содержит менее двух символов (требуется 2 и более)");
-            _canonizedCodeArrayInString= input;
-            for (int i = 0; i < _canonizedCodeArrayInString.Length-1; i++)
-                Shingles.Add(_canonizedCodeArrayInString.Substring(i, 2));
+            for (int i = 0; i < input.Length-1; i++)
+                Shingles.Add(input.Substring(i, 2));
         }
     }
     public class Comparator
     {
-        public float PercentTokens { get; private set; }
-        public float PercentShingles { get; private set; }
+        public float? PercentTokens { get; private set; }
+        public float? PercentShingles { get; private set; }
         /// <summary>
         /// Алгоритм Вагнера-Фишера (расстояние Левенштейна). Количество операций вставок, удаления, которые необходимо сделать из одного текста чтобы получить другой
         /// </summary>
@@ -321,17 +319,20 @@ namespace MyCode
             result.Add(jaccardToken.HasValue ? jaccardToken.Value*100 : 0);
             result.Add(diceToken.HasValue ? diceToken.Value*100 : 0);
             result.Add(lcsToken*100);
-            result.Add(PercentTokens);
+            result.Add(PercentTokens ?? 0);
             GC.Collect();
 
             //ШИНГЛЫ
-            Shingle right = null;
+            Shingle right;
             float? levenshteinShingle=null, jaccardShingle=null, diceShingle=null, lcsShingle=null; //nullable структура
             try
             {
                 right = new Shingle(rightCode.ToString());
             }
-            catch (ArgumentException) { }
+            catch (ArgumentException) 
+            {
+                right=null;
+            }
             if (leftCodeShingles != null && right != null)
             {
                 levenshteinShingle = LevenshteinDistance(leftCodeShingles.Shingles, right.Shingles);
@@ -344,7 +345,7 @@ namespace MyCode
             result.Add(jaccardShingle.HasValue ? jaccardShingle.Value * 100 : 0);
             result.Add(diceShingle.HasValue ? diceShingle.Value * 100 : 0);
             result.Add(lcsShingle.HasValue ? lcsShingle.Value * 100 : 0);
-            result.Add(PercentShingles);
+            result.Add(PercentShingles ?? 0);
             GC.Collect();
             return result;
         }

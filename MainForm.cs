@@ -82,8 +82,8 @@ namespace MyCode
         private void buttonCompare_Click(object sender, EventArgs e)
         {
             Tokenizer leftCode; //токенизатор левого окна
-            Shingle leftCodeShingle = null;//шинглы из кода левого окна
-            List<string> leftCodeTokenShingles = null; //список шинглов на основе токенов (в одном шингле содержится 4 токена для уменьшения количества совпадающих шинглов)
+            Shingle? leftCodeShingle = null;//шинглы из кода левого окна
+            List<string>? leftCodeTokenShingles = null; //список шинглов на основе токенов (в одном шингле содержится 4 токена для уменьшения количества совпадающих шинглов)
             uint symbolsCount; //количество символов в канонизированном тексте для потенциальной записи в базу данных
             string canonizedCode; //строка с канонизированным кодом
             List<Tokenizer> codeCompare; //создаем список кодов, с которым будет сравниваться основной код (т.е. тот, что введен в левом окне программы)
