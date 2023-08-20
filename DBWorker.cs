@@ -9,7 +9,7 @@ namespace MyCode
         /// Конструктор класса, который откроет базу данных и попробует поместить туда объект класса CodeInfo
         /// </summary>
         /// <param name="data">Информация, которую нужно загрузить в бд</param>
-        public void InsertIntoDB (CodeInfo data) 
+        public static void InsertIntoDB (CodeInfo data) 
         {
             using (var db = new LiteDatabase(@"CodeLibrary.db")) //подключаем базу данных NoSQL к программе 
             {
@@ -24,7 +24,7 @@ namespace MyCode
                 collection.EnsureIndex(x => x.DateTime);
             }
         }
-        public void DeleteFromDB(string codeId)
+        public static void DeleteFromDB(string codeId)
         {
             using (var db = new LiteDatabase(@"CodeLibrary.db")) //подключаем базу данных NoSQL к программе 
             {
@@ -34,7 +34,7 @@ namespace MyCode
             }
                 
         }
-        public IList<CodeInfo> GetAll()
+        public static IList<CodeInfo> GetAll()
         {
             var allCodes = new List<CodeInfo>(); //создаем список, в который будут помещаться данные
             using (var db = new LiteDatabase(@"CodeLibrary.db")) //подключаем базу данных NoSQL к программе 
@@ -51,7 +51,7 @@ namespace MyCode
         /// </summary>
         /// <param name="find">Число, относительно которого будет производиться поиск</param>
         /// <returns></returns>
-        public List<CodeInfo> Find (uint find, ProgrammingLanguages language)
+        public static List<CodeInfo> Find (uint find, ProgrammingLanguages language)
         {
             List<CodeInfo> allFindings = new List<CodeInfo>();
             using (var db = new LiteDatabase(@"CodeLibrary.db")) //подключаем базу данных NoSQL к программе 

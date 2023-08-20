@@ -12,12 +12,10 @@ namespace MyCode
 {
     public partial class Database : Form
     {
-        DBWorker worker; //создаем экземпляр базы данных
         private DataTable data = new DataTable();
         public Database()
         {
             InitializeComponent();
-            worker = new DBWorker();
             data.Columns.Add("ID");
             data.Columns.Add("Канонизированная строка с кодом");
             data.Columns.Add("Количество символов кода");
@@ -31,7 +29,7 @@ namespace MyCode
         }
         private void UpdateList()
         {
-            var list = worker.GetAll();//получаем весь список исходных кодов
+            var list = DBWorker.GetAll();//получаем весь список исходных кодов
             data.Clear();
             DataRow newRow;
             BindingSource bind = new BindingSource();
@@ -58,7 +56,7 @@ namespace MyCode
             }
             foreach (DataGridViewRow Row in DataBaseGrid.SelectedRows)
             {
-                worker.DeleteFromDB(Row.Cells[0].Value.ToString());
+                DBWorker.DeleteFromDB(Row.Cells[0].Value.ToString());
             }
             DialogResult dr = MessageBox.Show($"Удалено {DataBaseGrid.SelectedRows.Count} шт.", "Удаление", MessageBoxButtons.OK, MessageBoxIcon.Information);
             UpdateList();

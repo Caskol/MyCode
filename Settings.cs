@@ -28,11 +28,6 @@ namespace MyCode
             this?.Close();
         }
 
-        private void Settings_Load(object sender, EventArgs e)
-        {
-
-        }
-
         private void trackBarPlagiat_ValueChanged(object sender, EventArgs e)
         {
             numericUpDownPlagiat.Value = trackBarPlagiat.Value;
@@ -62,10 +57,7 @@ namespace MyCode
         }
         public List<string> GetData()
         {
-            List<string> data = new List<string>();
-            data.Add(plagiat.ToString());
-            data.Add(maximumSymbols.ToString());
-            return data;
+            return new List<string>() { plagiat.ToString(), maximumSymbols.ToString() }; ;
         }
     }
 }

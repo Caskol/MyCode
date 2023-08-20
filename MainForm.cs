@@ -12,13 +12,11 @@ namespace MyCode
         byte plagiatPercentSetting;
         uint maximumSymbolsSetting;
 
-        readonly List<String> availableLanguages = new List<String>()
-        {
-            "C", "C++", "C#","Java","Pascal", "Python"
-        };
+        readonly List<String> availableLanguages;
         public MainForm()
         {
             InitializeComponent();
+            availableLanguages = new List<String>(Enum.GetNames(typeof(ProgrammingLanguages)));
             comboBoxLanguage.DataSource = availableLanguages;
             plagiatPercentSetting = Properties.Settings.Default.plagiatPercent;
             maximumSymbolsSetting = Properties.Settings.Default.maximumSymbols;
@@ -97,7 +95,7 @@ namespace MyCode
                 return;
             }
 
-            canonizedCode = Canonize(FCTBLeft, (ProgrammingLanguages)comboBoxLanguage.SelectedIndex); //записываем в готовую строку с текстом результат удаления комментариев
+            canonizedCode = ComparatorUtils.Canonize(FCTBLeft, (ProgrammingLanguages)comboBoxLanguage.SelectedIndex); //записываем в готовую строку с текстом результат удаления комментариев
             symbolsCount = (uint)canonizedCode.Length;
 
 
@@ -142,7 +140,7 @@ namespace MyCode
                 }
                 else
                 {
-                    canonizedCode = Canonize(FCTBRight, (ProgrammingLanguages)comboBoxLanguage.SelectedIndex);
+                    canonizedCode = ComparatorUtils.Canonize(FCTBRight, (ProgrammingLanguages)comboBoxLanguage.SelectedIndex);
                     if (canonizedCode.Length > maximumSymbolsSetting)
                     {
                         MessageBox.Show($"В целях увеличения быстродействия программы нельзя вводить более {maximumSymbolsSetting} символов. Текущее количество - {canonizedCode.Length}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -215,7 +213,7 @@ namespace MyCode
                     {
                         DBWorker worker = new DBWorker();
                         CodeInfo ci = new CodeInfo(canonizedCode, symbolsCount, (ProgrammingLanguages)comboBoxLanguage.SelectedIndex, DateTime.Now);
-                        worker.InsertIntoDB(ci);
+                        DBWorker.InsertIntoDB(ci);
                     }
                 }
             }
@@ -236,7 +234,7 @@ namespace MyCode
             }
             try
             {
-                string canonizedCode = Canonize(FCTBLeft, (ProgrammingLanguages)comboBoxLanguage.SelectedIndex);
+                string canonizedCode = ComparatorUtils.Canonize(FCTBLeft, (ProgrammingLanguages)comboBoxLanguage.SelectedIndex);
                 TokensReview window = new TokensReview(canonizedCode, (ProgrammingLanguages)comboBoxLanguage.SelectedIndex);
                 window.Show();
             }
@@ -251,32 +249,7 @@ namespace MyCode
             Database window = new Database();
             window.Show();
         }
-        /// <summary>
-        /// Метод для канонизации текста (удаление комментариев и излишних символов)
-        /// </summary>
-        /// <param name="fctb">Окно с текстом, которое нужно канонизировать</param>
-        /// <param name="language">Язык программирования</param>
-        /// <returns></returns>
-        private string Canonize(FastColoredTextBox fctb,ProgrammingLanguages language)
-        {
-            StringBuilder line = new StringBuilder(""); //временная переменная, в которую будет записываться строка, из которой будут удалены комментарии
-            string tempLine;
-            for (int i = 0; i < fctb.LinesCount; i++) //записываем каждую строку в Stringbuilder
-            {
-                tempLine = Regex.Replace(fctb.Lines[i].ToString(), @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " ");
-                if (language==ProgrammingLanguages.C || language == ProgrammingLanguages.Cpp || language == ProgrammingLanguages.Python)
-                {
-                    if (tempLine.IndexOf("#") < 0)
-                        line.Append(tempLine);
-                    else if (tempLine.IndexOf("#") > 0)
-                        line.Append(tempLine.Substring(0, tempLine.IndexOf("#")));
-                }
-                else
-                    line.Append(tempLine);
-                line.Append(Environment.NewLine);
-            }
-            return line.ToString();
-        }
+        
 
         private void DragEnter(object sender, DragEventArgs e)
         {
@@ -330,8 +303,7 @@ namespace MyCode
         }
         private List<CodeInfo> FetchDataFromDB(uint length, ProgrammingLanguages language)
         {
-            DBWorker worker = new DBWorker();
-            return worker.Find(length, language);
+            return DBWorker.Find(length, language);
         }
         private void SwitchControl(Control control)
         {

@@ -56,7 +56,6 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Results";
             Text = "Результаты сравнения";
-            Load += Results_Load;
             ((System.ComponentModel.ISupportInitialize)resultsGridView).EndInit();
             ResumeLayout(false);
         }

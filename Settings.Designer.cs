@@ -120,8 +120,8 @@
             MinimizeBox = false;
             MinimumSize = new Size(440, 210);
             Name = "Settings";
+            StartPosition = FormStartPosition.CenterParent;
             Text = "Параметры";
-            Load += Settings_Load;
             ((System.ComponentModel.ISupportInitialize)trackBarPlagiat).EndInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownPlagiat).EndInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownSymbols).EndInit();

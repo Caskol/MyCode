@@ -77,7 +77,6 @@
             Name = "About";
             StartPosition = FormStartPosition.CenterParent;
             Text = "About";
-            Load += About_Load;
             ((System.ComponentModel.ISupportInitialize)pictureBoxLogo).EndInit();
             ResumeLayout(false);
         }

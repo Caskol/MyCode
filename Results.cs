@@ -51,10 +51,5 @@ namespace MyCode
             bindingSource.DataSource = data;
             resultsGridView.DataSource = bindingSource;
         }
-
-        private void Results_Load(object sender, EventArgs e)
-        {
-
-        }
     }
 }
