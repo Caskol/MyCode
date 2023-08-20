@@ -17,8 +17,7 @@ namespace MyCode
         CSharp,
         Java,
         Pascal,
-        Python,
-        BlaBla
+        Python
     }
     public class ComparatorUtils
     {

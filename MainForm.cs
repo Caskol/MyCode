@@ -86,141 +86,147 @@ namespace MyCode
             string canonizedCode; //строка с канонизированным кодом
             List<Tokenizer> codeCompare; //создаем список кодов, с которым будет сравниваться основной код (т.е. тот, что введен в левом окне программы)
             bool blockFromAddingInDatabase = false;
-
-            //Тест на пробелы в левом окне. Если в левом окне только пробелы, то выдать ошибку, иначе продолжить
-            string testingSpaces = FCTBLeft.Text;
-            if (testingSpaces.Replace(" ", "").Replace("\r\n", "").Replace("\t", "").Count() == 0)
-            {
-                MessageBox.Show("Левое окно программы не может быть пустым", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            canonizedCode = ComparatorUtils.Canonize(FCTBLeft, (ProgrammingLanguages)comboBoxLanguage.SelectedIndex); //записываем в готовую строку с текстом результат удаления комментариев
-            symbolsCount = (uint)canonizedCode.Length;
-
-
-            if (symbolsCount > maximumSymbolsSetting)
-            {
-                MessageBox.Show($"Текущие настройки программы не позволяют ввести {symbolsCount} символов в оба окна. Нельзя вводить более {maximumSymbolsSetting} символов в каждое окно.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-            leftCode = new Tokenizer((ProgrammingLanguages)comboBoxLanguage.SelectedIndex, canonizedCode);
             try
             {
-                leftCodeTokenShingles = new Shingle(leftCode, 3).Shingles;
-            }
-            catch (ArgumentException ex)
-            {
-                MessageBox.Show(ex.Message, "Важное предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                blockFromAddingInDatabase = true; //в базе данных не нужен неполноценный код, который будет доставлять проблемы в дальнейшем, поэтому такой код лучше только сравнивать
-            }
-            try
-            {
-                leftCodeShingle = new Shingle(leftCode.ToString());
-            }
-            catch (ArgumentException ex)
-            {
-                MessageBox.Show(ex.Message, "Важное предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                blockFromAddingInDatabase = true;
-            }
-
-
-            //Правое окно
-            bool isEmpty = false; //проверка на пустоту правого окна
-            codeCompare = new List<Tokenizer>();
-            List<string> canonizedComparableCodes = new List<string>();
-            if (FCTBRight.LinesCount >= 1) 
-            {
-                testingSpaces = FCTBRight.Text;
+                //Тест на пробелы в левом окне. Если в левом окне только пробелы, то выдать ошибку, иначе продолжить
+                string testingSpaces = FCTBLeft.Text;
                 if (testingSpaces.Replace(" ", "").Replace("\r\n", "").Replace("\t", "").Count() == 0)
                 {
-                    MessageBox.Show("Правое окно не содержит в себе информации. Сравнение будет происходить только на основе элементов из базы данных." +
-                    "Если таких элементов не будет, придется вставить код в правое окно, иначе не с чем сравнивать", "Важное предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    isEmpty = true;
+                    MessageBox.Show("Левое окно программы не может быть пустым", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                canonizedCode = ComparatorUtils.Canonize(FCTBLeft, (ProgrammingLanguages)comboBoxLanguage.SelectedIndex); //записываем в готовую строку с текстом результат удаления комментариев
+                symbolsCount = (uint)canonizedCode.Length;
+
+
+                if (symbolsCount > maximumSymbolsSetting)
+                {
+                    MessageBox.Show($"Текущие настройки программы не позволяют ввести {symbolsCount} символов в оба окна. Нельзя вводить более {maximumSymbolsSetting} символов в каждое окно.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+                leftCode = new Tokenizer((ProgrammingLanguages)comboBoxLanguage.SelectedIndex, canonizedCode);
+                try
+                {
+                    leftCodeTokenShingles = new Shingle(leftCode, 3).Shingles;
+                }
+                catch (ArgumentException ex)
+                {
+                    MessageBox.Show(ex.Message, "Важное предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    blockFromAddingInDatabase = true; //в базе данных не нужен неполноценный код, который будет доставлять проблемы в дальнейшем, поэтому такой код лучше только сравнивать
+                }
+                try
+                {
+                    leftCodeShingle = new Shingle(leftCode.ToString());
+                }
+                catch (ArgumentException ex)
+                {
+                    MessageBox.Show(ex.Message, "Важное предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    blockFromAddingInDatabase = true;
+                }
+
+
+                //Правое окно
+                bool isEmpty = false; //проверка на пустоту правого окна
+                codeCompare = new List<Tokenizer>();
+                List<string> canonizedComparableCodes = new List<string>();
+                if (FCTBRight.LinesCount >= 1)
+                {
+                    testingSpaces = FCTBRight.Text;
+                    if (testingSpaces.Replace(" ", "").Replace("\r\n", "").Replace("\t", "").Count() == 0)
+                    {
+                        MessageBox.Show("Правое окно не содержит в себе информации. Сравнение будет происходить только на основе элементов из базы данных." +
+                        "Если таких элементов не будет, придется вставить код в правое окно, иначе не с чем сравнивать", "Важное предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        isEmpty = true;
+                    }
+                    else
+                    {
+                        canonizedCode = ComparatorUtils.Canonize(FCTBRight, (ProgrammingLanguages)comboBoxLanguage.SelectedIndex);
+                        if (canonizedCode.Length > maximumSymbolsSetting)
+                        {
+                            MessageBox.Show($"В целях увеличения быстродействия программы нельзя вводить более {maximumSymbolsSetting} символов. Текущее количество - {canonizedCode.Length}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
+                        codeCompare.Add(new Tokenizer((ProgrammingLanguages)comboBoxLanguage.SelectedIndex, canonizedCode));//добавляем в список кодов информацию из правого окна
+                        canonizedComparableCodes.Add(canonizedCode);
+                    }
                 }
                 else
                 {
-                    canonizedCode = ComparatorUtils.Canonize(FCTBRight, (ProgrammingLanguages)comboBoxLanguage.SelectedIndex);
-                    if (canonizedCode.Length > maximumSymbolsSetting)
-                    {
-                        MessageBox.Show($"В целях увеличения быстродействия программы нельзя вводить более {maximumSymbolsSetting} символов. Текущее количество - {canonizedCode.Length}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
-                    codeCompare.Add(new Tokenizer((ProgrammingLanguages)comboBoxLanguage.SelectedIndex, canonizedCode));//добавляем в список кодов информацию из правого окна
-                    canonizedComparableCodes.Add(canonizedCode);
+                    MessageBox.Show("Правое окно не содержит в себе информации. Сравнение будет происходить только на основе элементов из базы данных." +
+                        "Если таких элементов не будет, придется вставить код в правое окно, иначе не с чем сравнивать", "Важное предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    isEmpty = true;
                 }
-            }
-            else
-            {
-                MessageBox.Show("Правое окно не содержит в себе информации. Сравнение будет происходить только на основе элементов из базы данных." +
-                    "Если таких элементов не будет, придется вставить код в правое окно, иначе не с чем сравнивать", "Важное предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                isEmpty = true;
-            }
 
 
 
-            //Работа с базой данных
-            var listFromDB = FetchDataFromDB(symbolsCount, (ProgrammingLanguages)comboBoxLanguage.SelectedIndex); //ищем в базе данных подобные элементы
-            foreach (var item in listFromDB) //добавляем каждый элемент
-            {
-                canonizedComparableCodes.Add(item.CanonizedCode); //добавляем канонизированный код в список
-                codeCompare.Add(new Tokenizer(item.Language, item.CanonizedCode)); //Добавляем в список токенизированных кодов код из базы данных
-            }
-            if (codeCompare.Count == 0 && isEmpty)
-            {
-                MessageBox.Show("В базе данных не было обнаружено исходных кодов, которые могут удовлетворить условиям совпадения с языком и количеством символов.");
-                return;
-            }
-
-
-            //Сравнение элементов
-            Comparator cmp = new Comparator();
-            List<List<float>> percents = new List<List<float>>(); //список процентов плагиата для каждого канонизированного кода
-
-            SwitchControl(this.Controls.Find("waitingPanel", false)[0]);
-
-            Thread thread = new Thread(() =>
-            {
-                Parallel.For(0, codeCompare.Count, i =>
+                //Работа с базой данных
+                var listFromDB = FetchDataFromDB(symbolsCount, (ProgrammingLanguages)comboBoxLanguage.SelectedIndex); //ищем в базе данных подобные элементы
+                foreach (var item in listFromDB) //добавляем каждый элемент
                 {
-                    percents.Add(cmp.Compare(leftCode, leftCodeTokenShingles, leftCodeShingle, codeCompare[i], i));
+                    canonizedComparableCodes.Add(item.CanonizedCode); //добавляем канонизированный код в список
+                    codeCompare.Add(new Tokenizer(item.Language, item.CanonizedCode)); //Добавляем в список токенизированных кодов код из базы данных
+                }
+                if (codeCompare.Count == 0 && isEmpty)
+                {
+                    MessageBox.Show("В базе данных не было обнаружено исходных кодов, которые могут удовлетворить условиям совпадения с языком и количеством символов.");
+                    return;
+                }
+
+
+                //Сравнение элементов
+                Comparator cmp = new Comparator();
+                List<List<float>> percents = new List<List<float>>(); //список процентов плагиата для каждого канонизированного кода
+
+                SwitchControl(this.Controls.Find("waitingPanel", false)[0]);
+
+                Thread thread = new Thread(() =>
+                {
+                    Parallel.For(0, codeCompare.Count, i =>
+                    {
+                        percents.Add(cmp.Compare(leftCode, leftCodeTokenShingles, leftCodeShingle, codeCompare[i], i));
+                    });
                 });
-            });
-            thread.Start();
+                thread.Start();
 
-            while (thread.IsAlive)
-            {
-                Application.DoEvents();
-            }
-
-            SwitchControl(this.Controls.Find("waitingPanel", false)[0]);
-
-
-            //Вывод результатов
-            Results results = new Results(canonizedComparableCodes, percents);
-            results.Show();
-
-            float maxPercent = percents.Max(item => item[5]); //Использование лямбда-выражения для поиска максимального процента
-            labelPlagiatPercent.Text = "Текущее значение схожести: " + maxPercent + "%";
-
-            if (plagiatPercentSetting > maxPercent)
-            {
-                labelPlagiat.Text = "Плагиат: Нет";
-                if (blockFromAddingInDatabase == false)
+                while (thread.IsAlive)
                 {
-                    DialogResult dr = MessageBox.Show("Вы хотите добавить код, размещенный в левом окне в базу данных?", "Добавление в базу данных", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                    if (dr == DialogResult.Yes)
+                    Application.DoEvents();
+                }
+
+                SwitchControl(this.Controls.Find("waitingPanel", false)[0]);
+
+
+                //Вывод результатов
+                Results results = new Results(canonizedComparableCodes, percents);
+                results.Show();
+
+                float maxPercent = percents.Max(item => item[5]); //Использование лямбда-выражения для поиска максимального процента
+                labelPlagiatPercent.Text = "Текущее значение схожести: " + maxPercent + "%";
+
+                if (plagiatPercentSetting > maxPercent)
+                {
+                    labelPlagiat.Text = "Плагиат: Нет";
+                    if (blockFromAddingInDatabase == false)
                     {
-                        DBWorker worker = new DBWorker();
-                        CodeInfo ci = new CodeInfo(canonizedCode, symbolsCount, (ProgrammingLanguages)comboBoxLanguage.SelectedIndex, DateTime.Now);
-                        DBWorker.InsertIntoDB(ci);
+                        DialogResult dr = MessageBox.Show("Вы хотите добавить код, размещенный в левом окне в базу данных?", "Добавление в базу данных", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                        if (dr == DialogResult.Yes)
+                        {
+                            DBWorker worker = new DBWorker();
+                            CodeInfo ci = new CodeInfo(canonizedCode, symbolsCount, (ProgrammingLanguages)comboBoxLanguage.SelectedIndex, DateTime.Now);
+                            DBWorker.InsertIntoDB(ci);
+                        }
                     }
                 }
+                else
+                {
+                    MessageBox.Show("Плагиат кода обнаружен. Посмотрите окно с результатами для получения подробной информации", "Плагиат!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    labelPlagiat.Text = "Плагиат: Да";
+                }
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("Плагиат кода обнаружен. Посмотрите окно с результатами для получения подробной информации", "Плагиат!", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                labelPlagiat.Text = "Плагиат: Да";
+                MessageBox.Show(ex.Message, "Произошла ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
