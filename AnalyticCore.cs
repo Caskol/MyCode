@@ -9,92 +9,80 @@ using System.Text;
 
 namespace MyCode
 {
+    public enum ProgrammingLanguages : byte
+    {
+        C,
+        Cpp,
+        CSharp,
+        Java,
+        Pascal,
+        Python
+    }
     public class Tokenizer
     {
-        public char[] excludedChars = new char[] { '(', ' ', ')', '{', '}', '"', ';', ',', ':', '[', ']', '\r', '\n', '.' }; //исключаем из списка токенов ненужные символы (мусор при сравнении
-        private string _language;
-        private Lexer _lexer;
-        private CommonTokenStream _cts;
+        private char[] excludedChars = new char[] { '(', ' ', ')', '{', '}', '"', ';', ',', ':', '[', ']', '\r', '\n', '.' }; //исключаем из списка токенов ненужные символы (мусор при сравнении
+        public ProgrammingLanguages Language { get; private set; }
+        public Lexer? Lexer { get; private set; }
+        public CommonTokenStream? CTS { get; private set; }
         /// <summary>
         /// int - номер строки, string - название токена, string - содержимое токена
         /// </summary>
-        private List<Tuple<int, string, string>> _tokens;
-        public string Language
-        {
-            get { return _language; }
-            set { _language = value; }
-        }
-        public Lexer Lexer
-        {
-            get { return _lexer; }
-            private set { _lexer = value; }
-        }
-        public CommonTokenStream CTS
-        {
-            get { return _cts; }
-            private set { _cts = value; }
-        }
-
-        public List<Tuple<int, string, string>> TokensArray
-        {
-            get { return _tokens; }
-            private set { _tokens = value; }
-        }
+        public List<Tuple<int, string, string>> TokensArray { get; private set; }
         
         /// <summary>
         /// Конструктор класса Tokenizer. Создает экземпляр класса, содержащий в себе список токенов и дерево парса 
         /// </summary>
         /// <param name="language">Язык программирования, к которому привязан введенный текст</param>
         /// <param name="inputText">Введённый текст</param>
-        public Tokenizer(string language, string inputText)
+        public Tokenizer(ProgrammingLanguages language, string inputText)
         {
             if (inputText.Length == 0)
             {
                 throw new ArgumentException("Строка с текстом была пуста");
             }
             TokensArray = new List<Tuple<int, string, string>>();
-            var _inputStream = CharStreams.fromString(inputText);
+            var inputStream = CharStreams.fromString(inputText);
             switch (language)
             {
-                case "C":
+                case ProgrammingLanguages.C:
                     {
-                        Lexer = new CLexer(_inputStream); //создаем лексер на основе введенного текста
-                        CTS = new CommonTokenStream(_lexer); //создаем поток токенов, полученных в результате работы лексера
+                        Lexer = new CLexer(inputStream); //создаем лексер на основе введенного текста
+                        CTS = new CommonTokenStream(Lexer); //создаем поток токенов, полученных в результате работы лексера
                         CTS.Fill(); //заполняем его
                         break;
                     }
-                case "C++":
+                case ProgrammingLanguages.Cpp:
                     {
-                        Lexer = new CPP14Lexer(_inputStream);
-                        CTS = new CommonTokenStream(_lexer);
+                        Lexer = new CPP14Lexer(inputStream);
+                        CTS = new CommonTokenStream(Lexer);
                         CTS.Fill();
                         break;
                     }
-                case "Pascal":
+                case ProgrammingLanguages.Pascal:
                     {
-                        Lexer = new pascalLexer(_inputStream);
-                        CTS = new CommonTokenStream(_lexer);
+                        Lexer = new pascalLexer(inputStream);
+                        CTS = new CommonTokenStream(Lexer);
                         CTS.Fill();
                         break;
                     }
-                case "Python":
+                case ProgrammingLanguages.Python:
                     {
-                        Lexer = new Python3Lexer(_inputStream);
-                        CTS = new CommonTokenStream(_lexer);
+                        Lexer = new Python3Lexer(inputStream);
+                        CTS = new CommonTokenStream(Lexer);
                         CTS.Fill();
                         break;
                     }
-                case "Java":
+                case ProgrammingLanguages.Java:
                     {
-                        Lexer = new Java9Lexer(_inputStream);
-                        CTS = new CommonTokenStream(_lexer);
+                        Lexer = new Java9Lexer(inputStream);
+                        CTS = new CommonTokenStream(Lexer);
                         CTS.Fill();
                         break;
                     }
-                case "C#":
+                case ProgrammingLanguages.CSharp:
                     {
-                        Lexer = new CSharpLexer(_inputStream);
-                        CTS = new CommonTokenStream(_lexer);
+                        Lexer = new CSharpLexer(inputStream);
+                        CTS = new CommonTokenStream(Lexer);
                         CTS.Fill();
                         break;
                     }
@@ -151,12 +139,7 @@ namespace MyCode
     public class Shingle
     {
         private string _canonizedCodeArrayInString;
-        private List<string> _shingleList;
-        public List<string> Shingles
-        {
-            get { return _shingleList; }
-            private set { _shingleList = value; }
-        }
+        public List<string> Shingles { get; private set; }
         /// <summary>
         /// Конструктор класса, который принимает список идентификаторов из токенизатора а затем составляет из них список шинглов длиной n (по умолчанию n=4)
         /// </summary>
@@ -201,17 +184,8 @@ namespace MyCode
     }
     public class Comparator
     {
-        private float percentageTokens = 0;
-        private float percentageShingles = 0;
-        public float PercentTokens 
-        {
-            get { return percentageTokens; } 
-            set { percentageTokens = value; } 
-        }
-        public float PercentShingles 
-        {   get { return percentageShingles; } 
-            set { percentageShingles = value; } 
-        }
+        public float PercentTokens { get; private set; }
+        public float PercentShingles { get; private set; }
         /// <summary>
         /// Алгоритм Вагнера-Фишера (расстояние Левенштейна). Количество операций вставок, удаления, которые необходимо сделать из одного текста чтобы получить другой
         /// </summary>
@@ -275,8 +249,6 @@ namespace MyCode
         /// <summary>
         /// Коэффициент Сёренсена-Дайса для вычисления схожести двух массивов.
         /// </summary>
-        /// <param name="array1">Список шинглов, полученных из первого текста</param>
-        /// <param name="array2">Список шинглов, полученных из второго текста</param>
         /// <returns></returns>
         public float SorensenDiceCoefficient(List<string> gramms1, List<string> gramms2)
         {
@@ -291,8 +263,6 @@ namespace MyCode
         /// <summary>
         /// Коэффициент схожести на основе количества символов, входящих в наибольную общую подпоследовательность (LCS)
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
         public float LongestCommonSubsequence<T>(List<T> array1, List<T> array2)
@@ -335,7 +305,7 @@ namespace MyCode
             List<float> result = new List<float>() { order };//создаем список результатов и помещаем номер сравниваемого текста
             //ТОКЕНЫ    
             float levenshteinToken = LevenshteinDistance(leftCode.TokensArray, rightCode.TokensArray);
-            float jaccardToken = -1, diceToken = -1;
+            float? jaccardToken = null, diceToken = null; //nullable структура если следующий участок кода не выполнится
             try
             {
                 jaccardToken = JaccardCoefficient(leftCodeTokenShingles, new Shingle(rightCode, 3).Shingles); //создаем k-граммы из идентификатор, причем k=3
@@ -343,20 +313,20 @@ namespace MyCode
             }
             catch (Exception) { }
             float lcsToken = LongestCommonSubsequence(leftCode.TokensArray, rightCode.TokensArray);
-            if (jaccardToken == -1 && diceToken == -1)
-                PercentTokens = (levenshteinToken + lcsToken) / 2 * 100;
+            if (jaccardToken.HasValue && diceToken.HasValue)
+                PercentTokens = (levenshteinToken + jaccardToken.Value + diceToken.Value + lcsToken) / 4 * 100;
             else
-                PercentTokens = (levenshteinToken + jaccardToken + diceToken + lcsToken) / 4 * 100;
+                PercentTokens = (levenshteinToken + lcsToken) / 2 * 100;
             result.Add(levenshteinToken*100);
-            result.Add(jaccardToken*100);
-            result.Add(diceToken*100);
+            result.Add(jaccardToken.HasValue ? jaccardToken.Value*100 : 0);
+            result.Add(diceToken.HasValue ? diceToken.Value*100 : 0);
             result.Add(lcsToken*100);
             result.Add(PercentTokens);
             GC.Collect();
 
             //ШИНГЛЫ
             Shingle right = null;
-            float levenshteinShingle=-1, jaccardShingle=-1, diceShingle=-1, lcsShingle=-1;
+            float? levenshteinShingle=null, jaccardShingle=null, diceShingle=null, lcsShingle=null; //nullable структура
             try
             {
                 right = new Shingle(rightCode.ToString());
@@ -368,12 +338,12 @@ namespace MyCode
                 jaccardShingle = JaccardCoefficient(leftCodeShingles.Shingles, right.Shingles);
                 diceShingle = SorensenDiceCoefficient(leftCodeShingles.Shingles, right.Shingles);
                 lcsShingle = LongestCommonSubsequence(leftCodeShingles.Shingles, right.Shingles);
-                PercentShingles = (levenshteinShingle + jaccardShingle + diceShingle + lcsShingle) / 4 * 100;
+                PercentShingles = (levenshteinShingle.Value + jaccardShingle.Value + diceShingle.Value + lcsShingle.Value) / 4 * 100;
             }
-            result.Add(levenshteinShingle*100);
-            result.Add(jaccardShingle*100);
-            result.Add(diceShingle*100);
-            result.Add(lcsShingle*100);
+            result.Add(levenshteinShingle.HasValue ? levenshteinShingle.Value * 100 : 0);
+            result.Add(jaccardShingle.HasValue ? jaccardShingle.Value * 100 : 0);
+            result.Add(diceShingle.HasValue ? diceShingle.Value * 100 : 0);
+            result.Add(lcsShingle.HasValue ? lcsShingle.Value * 100 : 0);
             result.Add(PercentShingles);
             GC.Collect();
             return result;

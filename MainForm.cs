@@ -97,7 +97,7 @@ namespace MyCode
                 return;
             }
 
-            canonizedCode = Canonize(FCTBLeft, comboBoxLanguage.SelectedValue.ToString()); //записываем в готовую строку с текстом результат удаления комментариев
+            canonizedCode = Canonize(FCTBLeft, (ProgrammingLanguages)comboBoxLanguage.SelectedIndex); //записываем в готовую строку с текстом результат удаления комментариев
             symbolsCount = (uint)canonizedCode.Length;
 
 
@@ -106,7 +106,7 @@ namespace MyCode
                 MessageBox.Show($"Текущие настройки программы не позволяют ввести {symbolsCount} символов в оба окна. Нельзя вводить более {maximumSymbolsSetting} символов в каждое окно.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            leftCode = new Tokenizer(comboBoxLanguage.SelectedValue.ToString(), canonizedCode);
+            leftCode = new Tokenizer((ProgrammingLanguages)comboBoxLanguage.SelectedIndex, canonizedCode);
             try
             {
                 leftCodeTokenShingles = new Shingle(leftCode, 3).Shingles;
@@ -142,13 +142,13 @@ namespace MyCode
                 }
                 else
                 {
-                    canonizedCode = Canonize(FCTBRight, comboBoxLanguage.SelectedValue.ToString());
+                    canonizedCode = Canonize(FCTBRight, (ProgrammingLanguages)comboBoxLanguage.SelectedIndex);
                     if (canonizedCode.Length > maximumSymbolsSetting)
                     {
                         MessageBox.Show($"В целях увеличения быстродействия программы нельзя вводить более {maximumSymbolsSetting} символов. Текущее количество - {canonizedCode.Length}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
-                    codeCompare.Add(new Tokenizer(comboBoxLanguage.SelectedValue.ToString(), canonizedCode));//добавляем в список кодов информацию из правого окна
+                    codeCompare.Add(new Tokenizer((ProgrammingLanguages)comboBoxLanguage.SelectedIndex, canonizedCode));//добавляем в список кодов информацию из правого окна
                     canonizedComparableCodes.Add(canonizedCode);
                 }
             }
@@ -162,7 +162,7 @@ namespace MyCode
 
 
             //Работа с базой данных
-            var listFromDB = FetchDataFromDB(symbolsCount, comboBoxLanguage.SelectedValue.ToString()); //ищем в базе данных подобные элементы
+            var listFromDB = FetchDataFromDB(symbolsCount, (ProgrammingLanguages)comboBoxLanguage.SelectedIndex); //ищем в базе данных подобные элементы
             foreach (var item in listFromDB) //добавляем каждый элемент
             {
                 canonizedComparableCodes.Add(item.CanonizedCode); //добавляем канонизированный код в список
@@ -214,7 +214,7 @@ namespace MyCode
                     if (dr == DialogResult.Yes)
                     {
                         DBWorker worker = new DBWorker();
-                        CodeInfo ci = new CodeInfo(canonizedCode, symbolsCount, comboBoxLanguage.SelectedValue.ToString(), DateTime.Now);
+                        CodeInfo ci = new CodeInfo(canonizedCode, symbolsCount, (ProgrammingLanguages)comboBoxLanguage.SelectedIndex, DateTime.Now);
                         worker.InsertIntoDB(ci);
                     }
                 }
@@ -236,8 +236,8 @@ namespace MyCode
             }
             try
             {
-                string canonizedCode = Canonize(FCTBLeft, comboBoxLanguage.SelectedValue.ToString());
-                TokensReview window = new TokensReview(canonizedCode, comboBoxLanguage.Text);
+                string canonizedCode = Canonize(FCTBLeft, (ProgrammingLanguages)comboBoxLanguage.SelectedIndex);
+                TokensReview window = new TokensReview(canonizedCode, (ProgrammingLanguages)comboBoxLanguage.SelectedIndex);
                 window.Show();
             }
             catch (Exception ex)
@@ -257,14 +257,14 @@ namespace MyCode
         /// <param name="fctb">Окно с текстом, которое нужно канонизировать</param>
         /// <param name="language">Язык программирования</param>
         /// <returns></returns>
-        private string Canonize(FastColoredTextBox fctb,string language)
+        private string Canonize(FastColoredTextBox fctb,ProgrammingLanguages language)
         {
             StringBuilder line = new StringBuilder(""); //временная переменная, в которую будет записываться строка, из которой будут удалены комментарии
             string tempLine;
             for (int i = 0; i < fctb.LinesCount; i++) //записываем каждую строку в Stringbuilder
             {
-                tempLine = Regex.Replace(FCTBLeft.Lines[i].ToString(), @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " ");
-                if (language.Equals("C") || language.Equals("C++") || language.Equals("Python"))
+                tempLine = Regex.Replace(fctb.Lines[i].ToString(), @"\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$", " ");
+                if (language==ProgrammingLanguages.C || language == ProgrammingLanguages.Cpp || language == ProgrammingLanguages.Python)
                 {
                     if (tempLine.IndexOf("#") < 0)
                         line.Append(tempLine);
@@ -328,7 +328,7 @@ namespace MyCode
                 Properties.Settings.Default.Save();
             }
         }
-        private List<CodeInfo> FetchDataFromDB(uint length, string language)
+        private List<CodeInfo> FetchDataFromDB(uint length, ProgrammingLanguages language)
         {
             DBWorker worker = new DBWorker();
             return worker.Find(length, language);

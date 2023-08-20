@@ -42,18 +42,16 @@ namespace MyCode
                 var collection = db.GetCollection<CodeInfo>("Library"); //получаем набор исходных кодов (CodeInfo) из базы данных в таблице Library
                 var array = collection.FindAll(); //получаем массив всех элементов из коллекции
                 foreach (var code in array)
-                {
                     allCodes.Add(code);
-                }
-                return allCodes;
             }
+            return allCodes;
         }
         /// <summary>
         /// Метод для поиска в базе данных по значению количества символов SymbolsCount
         /// </summary>
         /// <param name="find">Число, относительно которого будет производиться поиск</param>
         /// <returns></returns>
-        public List<CodeInfo> Find (uint find, string language)
+        public List<CodeInfo> Find (uint find, ProgrammingLanguages language)
         {
             List<CodeInfo> allFindings = new List<CodeInfo>();
             using (var db = new LiteDatabase(@"CodeLibrary.db")) //подключаем базу данных NoSQL к программе 
@@ -62,7 +60,7 @@ namespace MyCode
                 var query = Query.And(
                     Query.GTE("SymbolsCount", find - find * 0.2), //ищем те документы, у которых количество символов на 20% меньше заданного 
                     Query.LTE("SymbolsCount", find + find * 0.2), //ищем те документы, у которых количество символов на 20% больше заданного
-                    Query.EQ("Language", language));
+                    Query.EQ("Language", language.ToString()));
                 var array = collection.Find(query);
                 foreach (var code in array)
                 {

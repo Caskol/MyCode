@@ -13,9 +13,9 @@ namespace MyCode
         public ObjectId Id { get; set; }
         public string CanonizedCode { get; set; } //канонизированный код
         public uint SymbolsCount { get; set; } //количество символов в канонизированном коде
-        public string Language { get; set; } //язык, на котором был написан код
+        public ProgrammingLanguages Language { get; set; } //язык, на котором был написан код
         public DateTime DateTime { get; set; } //дата добавления
-        public CodeInfo( string canonizedCode, uint symbolsCount, string language, DateTime dateTime)
+        public CodeInfo( string canonizedCode, uint symbolsCount, ProgrammingLanguages language, DateTime dateTime)
         {
             CanonizedCode = canonizedCode;
             SymbolsCount = symbolsCount;

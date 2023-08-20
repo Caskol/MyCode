@@ -15,11 +15,11 @@ namespace MyCode
     public partial class TokensReview : Form
     {
         public string textFromParent; //строка, полученная из основного окна
-        public string programmingLanguage; //строка, которая указывает, какой язык программирования был выбран для анализа
+        public ProgrammingLanguages programmingLanguage; //строка, которая указывает, какой язык программирования был выбран для анализа
         private DataTable tokens = new DataTable();
 
         Tokenizer tokenizer;
-        public TokensReview(string textFromParent, string programmingLanguage)
+        public TokensReview(string textFromParent, ProgrammingLanguages programmingLanguage)
         {
             //инициализируем окно и выставляем названия колонкам
             this.textFromParent = textFromParent;
