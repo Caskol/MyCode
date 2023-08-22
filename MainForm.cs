@@ -81,7 +81,7 @@ namespace MyCode
         {
             Tokenizer leftCode; //токенизатор левого окна
             Shingle? leftCodeShingle = null;//шинглы из кода левого окна
-            List<string>? leftCodeTokenShingles = null; //список шинглов на основе токенов (в одном шингле содержится 4 токена для уменьшения количества совпадающих шинглов)
+            List<string>? leftCodeTokenShingles = null; //список шинглов на основе токенов (в одном шингле содержится 3 токена для уменьшения количества совпадающих шинглов)
             uint symbolsCount; //количество символов в канонизированном тексте для потенциальной записи в базу данных
             string canonizedCode; //строка с канонизированным кодом
             List<Tokenizer> codeCompare; //создаем список кодов, с которым будет сравниваться основной код (т.е. тот, что введен в левом окне программы)
@@ -108,7 +108,7 @@ namespace MyCode
                 leftCode = new Tokenizer((ProgrammingLanguages)comboBoxLanguage.SelectedIndex, canonizedCode);
                 try
                 {
-                    leftCodeTokenShingles = new Shingle(leftCode, 3).Shingles;
+                    leftCodeTokenShingles = new Shingle(leftCode, 3).ShinglesArray.ToList();
                 }
                 catch (ArgumentException ex)
                 {
@@ -129,7 +129,7 @@ namespace MyCode
                 //Правое окно
                 bool isEmpty = false; //проверка на пустоту правого окна
                 codeCompare = new List<Tokenizer>();
-                List<string> canonizedComparableCodes = new List<string>();
+                List<string> canonizedCodes = new List<string>();
                 if (FCTBRight.LinesCount >= 1)
                 {
                     testingSpaces = FCTBRight.Text;
@@ -148,7 +148,7 @@ namespace MyCode
                             return;
                         }
                         codeCompare.Add(new Tokenizer((ProgrammingLanguages)comboBoxLanguage.SelectedIndex, canonizedCode));//добавляем в список кодов информацию из правого окна
-                        canonizedComparableCodes.Add(canonizedCode);
+                        canonizedCodes.Add(canonizedCode);
                     }
                 }
                 else
@@ -164,7 +164,7 @@ namespace MyCode
                 var listFromDB = FetchDataFromDB(symbolsCount, (ProgrammingLanguages)comboBoxLanguage.SelectedIndex); //ищем в базе данных подобные элементы
                 foreach (var item in listFromDB) //добавляем каждый элемент
                 {
-                    canonizedComparableCodes.Add(item.CanonizedCode); //добавляем канонизированный код в список
+                    canonizedCodes.Add(item.CanonizedCode); //добавляем канонизированный код в список
                     codeCompare.Add(new Tokenizer(item.Language, item.CanonizedCode)); //Добавляем в список токенизированных кодов код из базы данных
                 }
                 if (codeCompare.Count == 0 && isEmpty)
@@ -198,7 +198,7 @@ namespace MyCode
 
 
                 //Вывод результатов
-                Results results = new Results(canonizedComparableCodes, percents);
+                Results results = new Results(canonizedCodes, percents);
                 results.Show();
 
                 float maxPercent = percents.Max(item => item[5]); //Использование лямбда-выражения для поиска максимального процента
@@ -212,7 +212,6 @@ namespace MyCode
                         DialogResult dr = MessageBox.Show("Вы хотите добавить код, размещенный в левом окне в базу данных?", "Добавление в базу данных", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                         if (dr == DialogResult.Yes)
                         {
-                            DBWorker worker = new DBWorker();
                             CodeInfo ci = new CodeInfo(canonizedCode, symbolsCount, (ProgrammingLanguages)comboBoxLanguage.SelectedIndex, DateTime.Now);
                             DBWorker.InsertIntoDB(ci);
                         }

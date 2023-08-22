@@ -53,7 +53,7 @@ namespace MyCode
         /// <param name="array1">Массив токенов, полученных из первого текста</param>
         /// <param name="array2">Массив токенов, полученных из второго текста</param>
         /// <returns>Процент совпадения фрагментов</returns>
-        public static float LevenshteinDistance<T>(List<T> array1, List<T> array2)
+        public static float LevenshteinDistance<T>(IReadOnlyList<T> array1, IReadOnlyList<T> array2)
         {
             if (array1.Count == 0 || array2.Count == 0)
                 throw new ArgumentNullException("Как минимум один из сравниваемых массивов был пустым");
@@ -68,7 +68,7 @@ namespace MyCode
                         row1[j] = (ushort)j;
                 for (int j = 1; j < array2.Count + 1; j++)
                 {
-                    if (array1 is List<Tuple<int, string, string>> tokens1 && array2 is List<Tuple<int, string, string>> tokens2) //преобразовываем T в тип Tuple
+                    if (array1 is IReadOnlyList<Tuple<int, string, string>> tokens1 && array2 is IReadOnlyList<Tuple<int, string, string>> tokens2) //преобразовываем T в тип Tuple
                     {
                         if (!string.Equals(tokens1[i - 1].Item2, tokens2[j - 1].Item2)) //если i-й токен первого массива не совпадает с j-м токеном второго массива
                             row2[j] = (ushort)Math.Min(Math.Min(row1[j] + 1, row2[j - 1] + 1), row1[j - 1] + 1);// D(1,1) = Min (D(0,1)+1, D(1,0)+1,D(0,0)+1)
@@ -96,7 +96,7 @@ namespace MyCode
         /// <param name="array2">Массив элементов (токены или шинглы), полученных из второго текста</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public static float JaccardCoefficient(List<string> array1, List<string> array2)
+        public static float JaccardCoefficient(IReadOnlyList<string> array1, IReadOnlyList<string> array2)
         {
             if (array1.Count == 0 || array2.Count == 0)
                 throw new ArgumentNullException("Как минимум один из переданных списков не содержит объектов типа string или Tuple");
@@ -111,7 +111,7 @@ namespace MyCode
         /// Коэффициент Сёренсена-Дайса для вычисления схожести двух массивов.
         /// </summary>
         /// <returns></returns>
-        public static float SorensenDiceCoefficient(List<string> gramms1, List<string> gramms2)
+        public static float SorensenDiceCoefficient(IReadOnlyList<string> gramms1, IReadOnlyList<string> gramms2)
         {
             if (gramms1.Count == 0 || gramms2.Count == 0)
                 throw new ArgumentNullException("Как минимум один из переданных списков не содержит объектов типа string");
@@ -126,7 +126,7 @@ namespace MyCode
         /// </summary>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public static float LongestCommonSubsequence<T>(List<T> array1, List<T> array2)
+        public static float LongestCommonSubsequence<T>(IReadOnlyList<T> array1, IReadOnlyList<T> array2)
         {
             if (array1.Count == 0 || array2.Count == 0)
                 throw new ArgumentNullException("Как минимум один из сравниваемых массивов был пустым");
@@ -138,7 +138,7 @@ namespace MyCode
                 row2[0] = 0;
                 for (int j = 1; j < array2.Count + 1; j++) //столбец y
                 {
-                    if (array1 is List<Tuple<int, string, string>> tokens1 && array2 is List<Tuple<int, string, string>> tokens2) //преобразовываем T в тип Tuple
+                    if (array1 is IReadOnlyList<Tuple<int, string, string>> tokens1 && array2 is IReadOnlyList<Tuple<int, string, string>> tokens2) //преобразовываем T в тип Tuple
                     {
                         if (!string.Equals(tokens1[i - 1].Item2, tokens2[j - 1].Item2)) //если i-й токен первого массива не совпадает с j-м токеном второго массива
                             row2[j] = Math.Max(row1[j], row2[j - 1]);// то берем максимальный из значений левого символа или верхнего символа
@@ -165,13 +165,14 @@ namespace MyCode
     public class Tokenizer
     {
         private char[] excludedChars = new char[] { '(', ' ', ')', '{', '}', '"', ';', ',', ':', '[', ']', '\r', '\n', '.' }; //исключаем из списка токенов ненужные символы (мусор при сравнении
-        public ProgrammingLanguages Language { get; private set; }
-        public Lexer Lexer { get; private set; }
-        public CommonTokenStream CTS { get; private set; }
+        private ProgrammingLanguages Language { get; set; }
+        private Lexer Lexer { get; set; }
+        private CommonTokenStream CTS { get; set; }
         /// <summary>
         /// int - номер строки, string - название токена, string - содержимое токена
         /// </summary>
-        public List<Tuple<int, string, string>> TokensArray { get; private set; }
+        private List<Tuple<int, string, string>> _tokensArray = new List<Tuple<int, string, string>>();
+        public IReadOnlyList<Tuple<int, string, string>> TokensArray => _tokensArray;
         
         /// <summary>
         /// Конструктор класса Tokenizer. Создает экземпляр класса, содержащий в себе список токенов и дерево парса 
@@ -184,7 +185,6 @@ namespace MyCode
             {
                 throw new ArgumentException("Строка с текстом была пуста");
             }
-            TokensArray = new List<Tuple<int, string, string>>();
             var inputStream = CharStreams.fromString(inputText);
             switch (language)
             {
@@ -240,7 +240,7 @@ namespace MyCode
             {
                 foreach (var Token in CTS.GetTokens())
                     if (Token.Text.IndexOfAny(excludedChars) == -1 && Token.Text!="<EOF>") //если токен не содержит исключаемых символов, описанных в excludedChars
-                        TokensArray.Add(new Tuple<int, string, string>(Token.Line, Lexer.Vocabulary.GetSymbolicName(Token.Type), Token.Text));
+                        _tokensArray.Add(new Tuple<int, string, string>(Token.Line, Lexer.Vocabulary.GetSymbolicName(Token.Type), Token.Text));
             }
         }
         /// <summary>
@@ -282,7 +282,8 @@ namespace MyCode
     }
     public class Shingle
     {
-        public List<string> Shingles { get; private set; }
+        private List<string> _shinglesArray = new List<string>();
+        public IReadOnlyList<string> ShinglesArray => _shinglesArray; 
         /// <summary>
         /// Конструктор класса, который принимает список идентификаторов из токенизатора а затем составляет из них список шинглов длиной n (по умолчанию n=4)
         /// </summary>
@@ -296,7 +297,6 @@ namespace MyCode
             }
             else
             {
-                Shingles = new List<string>();
                 StringBuilder sb = new StringBuilder("");
                 List<string> ids = tokenizer.GetIdentificatorsList(); //записываем в список все идентификаторы из токенизатора
                 if (ids.Count < n)
@@ -306,7 +306,7 @@ namespace MyCode
                     sb.Clear();
                     for (int j=i;j<i+n;j++)
                         sb.Append(ids[j]);
-                    Shingles.Add(sb.ToString());
+                    _shinglesArray.Add(sb.ToString());
                 }
             }    
         }
@@ -317,11 +317,10 @@ namespace MyCode
         /// <exception cref="ArgumentException"></exception>
         public Shingle (string input)
         {
-            Shingles = new List<string>();
             if (input.Length < 2)
                 throw new ArgumentException("Сравнение текстов при помощи метода шинглов недоступно, т.к. один из текстов содержит менее двух символов (требуется 2 и более)");
             for (int i = 0; i < input.Length-1; i++)
-                Shingles.Add(input.Substring(i, 2));
+                _shinglesArray.Add(input.Substring(i, 2));
         }
     }
     public class Comparator
@@ -337,8 +336,8 @@ namespace MyCode
             float? jaccardToken = null, diceToken = null; //nullable структура если следующий участок кода не выполнится
             try
             {
-                jaccardToken = ComparatorUtils.JaccardCoefficient(leftCodeTokenShingles, new Shingle(rightCode, 3).Shingles); //создаем k-граммы из идентификатор, причем k=3
-                diceToken = ComparatorUtils.SorensenDiceCoefficient(leftCodeTokenShingles, new Shingle(rightCode, 3).Shingles);
+                jaccardToken = ComparatorUtils.JaccardCoefficient(leftCodeTokenShingles, new Shingle(rightCode, 3).ShinglesArray); //создаем k-граммы из идентификатор, причем k=3
+                diceToken = ComparatorUtils.SorensenDiceCoefficient(leftCodeTokenShingles, new Shingle(rightCode, 3).ShinglesArray);
             }
             catch (Exception) { }
             float lcsToken = ComparatorUtils.LongestCommonSubsequence(leftCode.TokensArray, rightCode.TokensArray);
@@ -366,10 +365,10 @@ namespace MyCode
             }
             if (leftCodeShingles != null && right != null)
             {
-                levenshteinShingle = ComparatorUtils.LevenshteinDistance(leftCodeShingles.Shingles, right.Shingles);
-                jaccardShingle = ComparatorUtils.JaccardCoefficient(leftCodeShingles.Shingles, right.Shingles);
-                diceShingle = ComparatorUtils.SorensenDiceCoefficient(leftCodeShingles.Shingles, right.Shingles);
-                lcsShingle = ComparatorUtils.LongestCommonSubsequence(leftCodeShingles.Shingles, right.Shingles);
+                levenshteinShingle = ComparatorUtils.LevenshteinDistance(leftCodeShingles.ShinglesArray, right.ShinglesArray);
+                jaccardShingle = ComparatorUtils.JaccardCoefficient(leftCodeShingles.ShinglesArray, right.ShinglesArray);
+                diceShingle = ComparatorUtils.SorensenDiceCoefficient(leftCodeShingles.ShinglesArray, right.ShinglesArray);
+                lcsShingle = ComparatorUtils.LongestCommonSubsequence(leftCodeShingles.ShinglesArray, right.ShinglesArray);
                 PercentShingles = (levenshteinShingle.Value + jaccardShingle.Value + diceShingle.Value + lcsShingle.Value) / 4 * 100;
             }
             result.Add(levenshteinShingle.HasValue ? levenshteinShingle.Value * 100 : 0);
